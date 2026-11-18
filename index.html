@@ -120,6 +120,12 @@
         flex: 1; min-height: 42px; border-radius: 9px; border: 1px solid var(--line);
         background: var(--surface2); color: var(--ink); font-weight: 800; font-size: 15px; padding: 2px 0;
       }
+      .fdot {
+        display: inline-block; width: 11px; height: 11px; border-radius: 50%;
+        border: 1.5px solid rgba(0,0,0,.35); vertical-align: -1px; flex: none;
+      }
+      .frame-line { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; font-size: 13px; margin: -2px 0 9px; }
+      .frame-line .fitem { display: inline-flex; align-items: center; gap: 4px; font-weight: 600; }
       .panel { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 12px 14px; box-shadow: var(--shadow); }
       .chips { display: flex; flex-wrap: wrap; gap: 7px; }
       .chip {
@@ -206,6 +212,7 @@
 
           <div class="movepad">
             <h3>Bấm từng mặt (khi vuốt khó)</h3>
+            <div class="frame-line" id="frameLine"></div>
             <div class="grid" id="movePad"></div>
           </div>
 
@@ -252,7 +259,7 @@
               <li><b>Rung haptic:</b> điện thoại rung nhẹ mỗi khi một lớp quay, rung rõ hơn khi hoàn thành mục tiêu (nếu thiết bị và trình duyệt hỗ trợ rung).</li>
               <li><b>Các nước vừa đi:</b> mọi nước bạn quay đều được ghi lại theo ký hiệu (U, U′, U2, R…) ở panel “Các nước vừa đi” dưới khối, nước mới nhất được tô đậm; bấm “Sao chép dãy nước đi” để lấy cả dãy. Bấm Quay lại (undo) sẽ xoá nước cuối khỏi danh sách.</li>
               <li><b>Toàn màn hình:</b> bấm nút ⛶ (góc phải trên khối, hoặc nút “Toàn màn hình” dưới khối) để chỉ còn khối Rubik chiếm cả màn hình; bấm ✕ hoặc phím Esc để thoát.</li>
-              <li><b>Ký hiệu:</b> U = mặt trên (vàng), D = mặt dưới (trắng), R = phải, L = trái, F = trước (xanh lá), B = sau (xanh dương). Chữ không dấu = xoay 90° theo chiều kim đồng hồ nhìn vào mặt đó; thêm dấu ′ = ngược chiều; thêm số 2 = xoay 180°.</li>
+              <li><b>Ký hiệu — theo vị trí đang nhìn, không theo màu:</b> U = mặt đang ở <b>trên</b>, D = mặt đang ở <b>dưới</b>, R = mặt đang ở <b>bên phải</b> bạn, L = <b>bên trái</b>, F = mặt đang <b>hướng về phía bạn</b>, B = mặt ở <b>phía xa</b>. Xoay góc nhìn sang phía khác là các chữ này đổi mặt ngay theo vị trí mới — chấm màu cạnh mỗi nút bấm và dòng “Khung nhìn hiện tại” cho biết lúc này mỗi vị trí đang là mặt màu gì. Chữ không dấu = xoay 90° theo chiều kim đồng hồ nhìn vào mặt đó; thêm dấu ′ = ngược chiều; thêm số 2 = xoay 180°.</li>
               <li><b>Quay lại / Làm lại:</b> hoàn tác từng nước đã đi, kể cả nước vuốt tay.</li>
               <li><b>Tự động lưu ván:</b> trạng thái khối, các nước đã đi, thời gian và góc nhìn được tự lưu sau mỗi thay đổi — lỡ bấm Back hay đóng trang, mở lại là thấy dòng “Đã khôi phục ván trước” và chơi tiếp đúng ván dở. Bấm xáo trộn / ván mới thì ván đã lưu được thay bằng ván mới.</li>
               <li><b>Gợi ý:</b> máy tính phân tích trạng thái hiện tại và chỉ nước đi cụ thể tiếp theo trên đường giải ngắn — bấm “Đi luôn nước này” nếu muốn máy đi hộ, hoặc tự đi theo rồi bấm Gợi ý tiếp.</li>
@@ -924,8 +931,111 @@ if (typeof module !== 'undefined') Object.assign(module.exports, {
 
 // ================= UI =================
 const FACE_COLORS = { U: '#ffd43b', D: '#f8f9fa', F: '#2fb457', B: '#228be6', R: '#e03131', L: '#fd7e14' };
-const FACE_VI = { U: 'mặt Trên (vàng)', D: 'mặt Dưới (trắng)', R: 'mặt Phải (đỏ)', L: 'mặt Trái (cam)', F: 'mặt Trước (xanh lá)', B: 'mặt Sau (xanh dương)' };
 const FACE_SHORT = { U: 'Trên', D: 'Dưới', R: 'Phải', L: 'Trái', F: 'Trước', B: 'Sau' };
+// Màu của từng mặt theo danh tính ban đầu của viên tâm (chỉ để nói "mặt này
+// đang là màu gì", KHÔNG dùng để định nghĩa tên mặt).
+const COLOR_VI = { U: 'vàng', D: 'trắng', F: 'xanh lá', B: 'xanh dương', R: 'đỏ', L: 'cam' };
+
+// ---------- Khung mặt theo VỊ TRÍ KHÔNG GIAN hiện tại ----------
+// Tên mặt U/D/R/L/F/B gắn theo vị trí so với NGƯỜI NHÌN ngay lúc này:
+// U = đang ở trên, D = đang ở dưới, F = đang hướng về người nhìn, B = phía
+// xa, R = bên phải người nhìn, L = bên trái. Khung suy ra từ góc nhìn
+// camera (view.yaw / view.pitch): với mỗi hướng nhìn (phải / trên / trước
+// trong không gian màn hình), tìm hướng thế giới mà camera chiếu thành
+// hướng đó, rồi làm tròn tới trục thế giới gần nhất — chọn phép quay hợp
+// lệ (đủ 6 mặt, không trùng trục, giữ hướng tay) khớp nhất với góc nhìn.
+// Hệ nội bộ của khối / bộ giải (trục + lớp trong tọa độ khối) KHÔNG đổi:
+// chỉ dịch qua lại giữa "chữ cái vị trí" và "mặt thế giới" ở ranh giới
+// hiển thị / thao tác. Nhờ vậy history luôn lưu nước vật lý thật và
+// undo/redo đúng bất kể khung đã đổi sau đó; còn chữ ghi vào log là chữ
+// theo vị trí tại đúng thời điểm đi nước đó.
+const SPATIALS = ['U', 'D', 'R', 'L', 'F', 'B'];
+let frameMap = null;   // spatial letter -> world face letter, vd { F:'B', R:'F', ... }
+let frameInv = null;   // world face letter -> spatial letter
+let frameKey = '';
+const padDots = {};    // spatial letter -> dot element on the move pad
+function vecCross(a, b) { return [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]]; }
+function vecDot(a, b) { return a[0] * b[0] + a[1] * b[1] + a[2] * b[2]; }
+function faceOfVec(v) {
+  if (v[0] === 1) return 'R'; if (v[0] === -1) return 'L';
+  if (v[1] === 1) return 'U'; if (v[1] === -1) return 'D';
+  if (v[2] === 1) return 'F'; return 'B';
+}
+function viewDirToWorld(t) {
+  // viewRot(v) = Rx(pitch) ∘ Ry(yaw) (v); inverse: Ry(-yaw) ∘ Rx(-pitch)
+  let v = rot3(t, 0, -view.pitch);
+  v = rot3(v, 1, -view.yaw);
+  return v;
+}
+function computeFrameMap() {
+  const cR = viewDirToWorld([1, 0, 0]);   // hướng "bên phải người nhìn" trong tọa độ khối
+  const cU = viewDirToWorld([0, 1, 0]);   // hướng "ở trên"
+  const cF = viewDirToWorld([0, 0, 1]);   // hướng "về phía người nhìn"
+  const units = [[1,0,0],[-1,0,0],[0,1,0],[0,-1,0],[0,0,1],[0,0,-1]];
+  const axisOf = v => v.findIndex(x => x !== 0);
+  let best = null;
+  for (const rv of units) for (const uv of units) {
+    if (axisOf(rv) === axisOf(uv)) continue;
+    const fv = vecCross(rv, uv); // giữ đúng tay: Phải × Trên = Trước
+    const score = vecDot(cR, rv) + vecDot(cU, uv) + vecDot(cF, fv);
+    if (!best || score > best.score) best = { rv, uv, fv, score };
+  }
+  const neg = v => [-v[0], -v[1], -v[2]];
+  return {
+    R: faceOfVec(best.rv), L: faceOfVec(neg(best.rv)),
+    U: faceOfVec(best.uv), D: faceOfVec(neg(best.uv)),
+    F: faceOfVec(best.fv), B: faceOfVec(neg(best.fv))
+  };
+}
+function refreshFrame(force) {
+  if (typeof view === 'undefined' || typeof rot3 !== 'function') return;
+  const map = computeFrameMap();
+  const key = SPATIALS.map(s => map[s]).join('');
+  if (!force && frameMap && key === frameKey) return;
+  frameMap = map; frameKey = key;
+  frameInv = {};
+  for (const s of SPATIALS) frameInv[map[s]] = s;
+  for (const s of SPATIALS) {
+    const d = padDots[s];
+    if (d) {
+      d.style.background = FACE_COLORS[map[s]];
+      d.title = 'Mặt đang ở ' + FACE_SHORT[s].toLowerCase() + ': tâm màu ' + COLOR_VI[map[s]];
+    }
+  }
+  const fl = document.getElementById('frameLine');
+  if (fl) {
+    fl.innerHTML = '<span style="color:var(--muted)">Khung nhìn hiện tại:</span> ' +
+      SPATIALS.map(s => '<span class="fitem"><span class="fdot" style="background:' + FACE_COLORS[map[s]] + '"></span>' + FACE_SHORT[s] + ' = ' + COLOR_VI[map[s]] + '</span>').join('') +
+      '<span style="color:var(--muted)">Tên mặt tính theo vị trí đang nhìn — xoay góc nhìn là đổi theo ngay.</span>';
+  }
+}
+function ensureFrame() { if (!frameMap) refreshFrame(true); }
+function worldFaceForSpatial(s) { ensureFrame(); return frameMap[s]; }
+function spatialFaceForWorld(w) { ensureFrame(); return frameInv[w]; }
+// Chữ ký hiệu hiển thị cho một nước vật lý (tọa độ khối) theo khung HIỆN TẠI.
+function spatialNotationOf(mv) {
+  ensureFrame();
+  const fm = moveToFaceMove(mv);
+  if (fm) return frameInv[fm.face] + (fm.power === 2 ? '2' : fm.power === 3 ? "'" : '');
+  // Lớp giữa: đặt tên theo trục vị trí tương ứng (X→M, Y→E, Z→S trong khung nhìn)
+  const pos = ['R', 'U', 'F'].find(s => FACE_AXIS[frameMap[s]] === mv.axis);
+  const name = pos === 'R' ? 'M' : pos === 'U' ? 'E' : 'S';
+  const q = ((mv.q % 4) + 4) % 4;
+  return name + (q === 2 ? '2' : q === 3 ? "'" : '');
+}
+// Đọc một dãy công thức viết theo chữ VỊ TRÍ (R = mặt đang ở bên phải lúc
+// bấm) thành các nước vật lý trong tọa độ khối.
+function parseAlgSpatial(str) {
+  return str.trim().split(/\s+/).filter(Boolean).map(tok => {
+    const face = tok[0];
+    if ('UDFBRL'.includes(face)) {
+      let power = 1;
+      if (tok.includes('2')) power = 2; else if (tok.includes("'")) power = 3;
+      return faceMove(worldFaceForSpatial(face), power);
+    }
+    return parseNotation(tok);
+  });
+}
 
 const MODES = {
   free:    { name: 'Chơi tự do', desc: 'Xáo trộn ngẫu nhiên cả khối và giải từ đầu theo phương pháp cơ bản: tầng 1 (trắng ở dưới) → tầng 2 → 4 bước tầng 3.' },
@@ -1015,6 +1125,7 @@ function project(p3) {
 let drawnFaces = []; // {pts, pos, n} in cube space, topmost last
 function render() {
   if (!W) return;
+  refreshFrame(false); // góc nhìn đổi (kéo xoay khối) là khung mặt đổi theo ngay
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   ctx.clearRect(0, 0, W, H);
   // group stickers into cubies
@@ -1160,7 +1271,7 @@ function renderLog() {
 function userMove(mv, dur) {
   hideBanner();
   buzz(16);
-  moveLog.push(notationOf(mv));
+  moveLog.push(spatialNotationOf(mv)); // chữ theo vị trí tại thời điểm đi nước này
   renderLog();
   if (roundDone) { /* keep playing freely after done */ }
   enqueueMove(mv, { dur: dur || 150 });
@@ -1218,7 +1329,10 @@ function saveState() {
       roundDone: roundDone,
       timerElapsed: elapsedMs(),
       timerRunning: !!timerStart && roundActive && !roundDone,
-      view: { yaw: view.yaw, pitch: view.pitch, scale: view.scale }
+      view: { yaw: view.yaw, pitch: view.pitch, scale: view.scale },
+      // Khung mặt theo vị trí tại lúc lưu (suy ra lại được từ góc nhìn khi
+      // khôi phục, lưu kèm để đối chiếu / tương thích về sau).
+      frame: frameMap ? { U: frameMap.U, D: frameMap.D, R: frameMap.R, L: frameMap.L, F: frameMap.F, B: frameMap.B } : null
     };
     localStorage.setItem(SAVE_KEY, JSON.stringify(data));
   } catch (e) { /* storage unavailable — keep playing in-memory */ }
@@ -1253,6 +1367,7 @@ function restoreSavedState() {
     if (data.view && Number.isFinite(data.view.yaw) && Number.isFinite(data.view.pitch) && Number.isFinite(data.view.scale)) {
       view = { yaw: data.view.yaw, pitch: data.view.pitch, scale: data.view.scale };
     }
+    refreshFrame(true); // khung mặt suy lại từ góc nhìn vừa khôi phục — không lệch khung
     document.querySelectorAll('#modeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.mode === mode));
     document.getElementById('modeName').textContent = MODES[mode].name;
     updateModeDesc();
@@ -1432,8 +1547,8 @@ cv.addEventListener('touchstart', e => {
 }, { passive: false });
 function holdLabel(mv) {
   const fm = moveToFaceMove(mv);
-  return 'Đang giữ lớp <b>' + notationOf(mv).replace(/'/g, '′') + '</b>' +
-    (fm ? ' · mặt ' + FACE_SHORT[fm.face] : ' · lớp giữa');
+  return 'Đang giữ lớp <b>' + spatialNotationOf(mv).replace(/'/g, '′') + '</b>' +
+    (fm ? ' · mặt ' + FACE_SHORT[spatialFaceForWorld(fm.face)] : ' · lớp giữa');
 }
 function setHold(mv) {
   holdHL = mv ? { axis: mv.axis, layer: mv.layer } : null;
@@ -1517,7 +1632,7 @@ function finishDrag(commitAllowed) {
     if (!anim && !queue.length) {
       hideBanner();
       buzz(16);
-      moveLog.push(notationOf(mv)); renderLog();
+      moveLog.push(spatialNotationOf(mv)); renderLog();
       history.push(mv); redoStack = [];
       lastHint = null; document.getElementById('hintOut').classList.remove('show');
       anim = { mv, t0: performance.now(), dur: 130, from: fromAngle, to: mv.q * Math.PI / 2 };
@@ -1579,8 +1694,11 @@ function swipeToMove(hit, dx, dy) {
 
 // ---------- hint ----------
 function describeMove(face, power) {
+  // `face` là mặt trong hệ cố định của bộ giải; dịch sang vị trí đang nhìn:
+  // tên theo vị trí (Trên/Dưới/Phải/…) + màu tâm hiện tại của mặt đó.
   const dir = power === 1 ? 'theo chiều kim đồng hồ' : power === 2 ? '180°' : 'ngược chiều kim đồng hồ';
-  return 'Xoay ' + FACE_VI[face] + ' ' + dir + ' (ký hiệu ' + face + (power === 2 ? '2' : power === 3 ? '′' : '') + ').';
+  const sp = spatialFaceForWorld(face);
+  return 'Xoay mặt ' + FACE_SHORT[sp] + ' (tâm màu ' + COLOR_VI[face] + ') ' + dir + ' (ký hiệu ' + sp + (power === 2 ? '2' : power === 3 ? '′' : '') + ').';
 }
 function crossPatternTip(st) {
   if (mode !== 'cross') return '';
@@ -1625,9 +1743,9 @@ function computeHint() {
   lastHint = { moves: realMoves };
   const first = realMoves[0];
   const fm = moveToFaceMove(first);
-  document.getElementById('hintMove').textContent = notationOf(first).replace(/'/g, '′');
+  document.getElementById('hintMove').textContent = spatialNotationOf(first).replace(/'/g, '′');
   document.getElementById('hintText').textContent =
-    (fm ? describeMove(fm.face, fm.power) : 'Xoay lớp giữa ' + notationOf(first) + '.') +
+    (fm ? describeMove(fm.face, fm.power) : 'Xoay lớp giữa ' + spatialNotationOf(first) + '.') +
     ' Theo đường giải này còn khoảng ' + realMoves.length + ' nước nữa là xong.' + crossPatternTip(st);
   document.getElementById('hintNote').textContent = 'Gợi ý do máy tính tìm đường giải ngắn từ trạng thái hiện tại — có thể khác thứ tự công thức cơ bản bạn đang học, nhưng đi theo từng nước gợi ý sẽ về đích. Ở chế độ luyện tập, trạng thái chỉ xáo phần đang học nên gợi ý thường trùng với công thức của bước đó.';
   out.classList.add('show');
@@ -1665,7 +1783,7 @@ document.getElementById('btnRedo').addEventListener('click', () => {
   if (!redoStack.length) return;
   const mv = redoStack.pop();
   history.push(mv);
-  moveLog.push(notationOf(mv)); renderLog();
+  moveLog.push(spatialNotationOf(mv)); renderLog();
   enqueueMove(mv, { fromUndoRedo: true, dur: 120 });
   lastHint = null; document.getElementById('hintOut').classList.remove('show');
   updateStats();
@@ -1738,17 +1856,21 @@ afterMoveCommitted = function () {
 (function buildPad() {
   const pad = document.getElementById('movePad');
   for (const f of ['U', 'D', 'R', 'L', 'F', 'B']) {
+    // f là chữ VỊ TRÍ (U = mặt đang ở trên lúc bấm…): chấm màu cho biết mặt
+    // đang ở vị trí đó tâm màu gì, và lúc bấm mới dịch sang mặt vật lý.
     const g = document.createElement('div');
     g.className = 'face-group';
-    g.innerHTML = '<span class="fname"><b>' + f + '</b>' + FACE_SHORT[f] + '</span>';
+    g.innerHTML = '<span class="fname"><b>' + f + '</b>' + FACE_SHORT[f] + ' <span class="fdot"></span></span>';
+    padDots[f] = g.querySelector('.fdot');
     for (const [label, power] of [[f, 1], [f + '2', 2], [f + '′', 3]]) {
       const b = document.createElement('button');
       b.textContent = label;
-      b.addEventListener('click', () => userMove(faceMove(f, power), 140));
+      b.addEventListener('click', () => userMove(faceMove(worldFaceForSpatial(f), power), 140));
       g.appendChild(b);
     }
     pad.appendChild(g);
   }
+  refreshFrame(true);
 })();
 // mode chips
 (function buildChips() {
@@ -1778,7 +1900,7 @@ afterMoveCommitted = function () {
     btn.textContent = '▶ Áp dụng thử';
     btn.addEventListener('click', () => {
       hideBanner();
-      for (const mv of parseAlg(fc.alg)) enqueueMove(mv, { dur: 210 });
+      for (const mv of parseAlgSpatial(fc.alg)) enqueueMove(mv, { dur: 210 });
       lastHint = null; document.getElementById('hintOut').classList.remove('show');
     });
     row.appendChild(alg); row.appendChild(btn);
@@ -1791,7 +1913,7 @@ document.addEventListener('keydown', e => {
   if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); document.getElementById('btnUndo').click(); return; }
   const k = e.key.toUpperCase();
   if ('URFDLB'.includes(k) && k.length === 1 && !e.ctrlKey && !e.metaKey) {
-    userMove(faceMove(k, e.shiftKey ? 3 : 1), 130);
+    userMove(faceMove(worldFaceForSpatial(k), e.shiftKey ? 3 : 1), 130);
   }
 });
 
