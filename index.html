@@ -4,7 +4,16 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="color-scheme" content="light dark" />
-    <link rel="icon" href="data:," />
+    <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e9edf0" />
+    <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10151b" />
+    <meta name="description" content="Chơi Rubik 3x3 3D trên trình duyệt: vuốt xoay lớp theo ngón tay, gợi ý nước đi, undo/redo và các chế độ luyện công thức tầng 2, tầng 3." />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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" />
+    <link rel="apple-touch-icon" href="apple-touch-icon.png" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Rubik 3D" />
     <title>Rubik 3x3 3D — Chơi &amp; Luyện công thức</title>
     <style>
       :root {
@@ -62,17 +71,24 @@
         border: none; border-radius: 0; background: var(--bg);
       }
       .board.fs #cv { height: 100%; max-height: none; aspect-ratio: auto; }
-      .board.fs .drag-hint { display: none; }
       .view-tools { position: absolute; right: 8px; top: 8px; display: flex; flex-direction: column; gap: 6px; }
       .view-tools button {
         width: 40px; height: 40px; border-radius: 10px; border: 1px solid var(--line);
         background: var(--surface); color: var(--ink); font-size: 18px; font-weight: 700; opacity: .92;
       }
-      .drag-hint {
-        position: absolute; left: 10px; bottom: 8px; font-size: 12.5px; color: var(--muted);
-        background: var(--surface); border: 1px solid var(--line); border-radius: 999px; padding: 4px 10px; opacity: .92;
-        pointer-events: none;
+      .hold-tag {
+        position: absolute; left: 8px; top: 8px; z-index: 6; display: none; max-width: calc(100% - 72px);
+        background: var(--accent); color: var(--accent-ink); border-radius: 999px; padding: 6px 12px;
+        font-size: 13.5px; font-weight: 700; box-shadow: var(--shadow); pointer-events: none;
       }
+      .hold-tag.show { display: block; }
+      .log-chips { display: flex; flex-wrap: wrap; gap: 5px; min-height: 30px; align-items: center; }
+      .log-chip {
+        display: inline-block; min-width: 30px; text-align: center; padding: 4px 7px; border-radius: 7px;
+        background: var(--surface2); border: 1px solid var(--line); font-weight: 800; font-size: 14px;
+      }
+      .log-chip.last { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .log-empty { font-size: 13.5px; color: var(--muted); line-height: 1.45; }
       .banner {
         display: none; margin-top: 12px; border-radius: 12px; padding: 12px 14px;
         background: var(--warn-bg); border: 1px solid var(--warn-line); font-size: 15px;
@@ -134,6 +150,12 @@
       details.help p, details.help li { font-size: 14px; line-height: 1.55; color: var(--ink); }
       details.help ul { margin: 6px 0; padding-left: 20px; }
       .confetti { position: absolute; inset: 0; pointer-events: none; overflow: hidden; display: none; }
+      .install-panel { display: flex; align-items: center; gap: 12px; }
+      .install-panel.hide { display: none; }
+      .install-panel img { width: 46px; height: 46px; border-radius: 11px; flex: none; }
+      .install-panel .txt { flex: 1; font-size: 14px; line-height: 1.45; }
+      .install-panel .txt b { display: block; font-size: 15px; }
+      .install-panel .btn { flex: none; }
       .confetti.show { display: block; }
       .confetti i { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; animation: fall 1.6s ease-in forwards; }
       @keyframes fall { to { transform: translateY(560px) rotate(560deg); opacity: .2; } }
@@ -159,7 +181,7 @@
               <button id="viewReset" aria-label="Đặt lại góc nhìn">⟲</button>
               <button id="btnFs" aria-label="Toàn màn hình">⛶</button>
             </div>
-            <div class="drag-hint">Vuốt trên khối (cả phần đen) để xoay lớp · kéo vùng trống ngoài khối để xoay góc nhìn</div>
+            <div class="hold-tag" id="holdTag"></div>
             <div class="confetti" id="confetti"></div>
           </div>
 
@@ -174,9 +196,26 @@
             <button id="btnFsMain">⛶ Toàn màn hình</button>
           </div>
 
+          <div class="panel install-panel" id="installPanel">
+            <img src="data:image/png;base64,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" alt="" width="46" height="46" />
+            <div class="txt"><b>Cài Rubik 3x3 3D như một app</b>Mở nhanh từ màn hình chính, toàn màn hình không thanh địa chỉ, chơi được cả khi mất mạng.
+              <div class="hint-note" id="installNote" style="margin-top:4px"></div>
+            </div>
+            <button class="btn primary" id="btnInstall">📲 Cài app</button>
+          </div>
+
           <div class="movepad">
             <h3>Bấm từng mặt (khi vuốt khó)</h3>
             <div class="grid" id="movePad"></div>
+          </div>
+
+          <div class="panel">
+            <h3>🧾 Các nước vừa đi <span id="logCount" style="color:var(--muted);font-weight:600"></span></h3>
+            <div class="log-chips" id="logChips"></div>
+            <div class="mode-actions">
+              <button class="btn small" id="btnCopyLog">📋 Sao chép dãy nước đi</button>
+            </div>
+            <div class="hint-note" id="copyNote"></div>
           </div>
         </div>
 
@@ -209,11 +248,15 @@
             <summary>❓ Cách chơi &amp; ký hiệu</summary>
             <ul>
               <li><b>Vuốt ở bất kỳ đâu trên khối</b> — kể cả phần viền đen giữa các ô màu — theo chiều ngang/dọc để xoay lớp đó, giống hệt vuốt trên ô màu. <b>Kéo ở vùng trống ngoài khối</b> để xoay góc nhìn. Chạm nhầm thì đã có hàng nút bấm từng mặt ở dưới khối.</li>
+              <li><b>Highlight lớp đang giữ:</b> khi bắt đầu vuốt, tầng/cột sắp quay sẽ sáng viền vàng (phần còn lại tối đi) kèm nhãn ký hiệu ở góc khối. <b>Lớp đi theo đúng ngón tay:</b> kéo tới đâu lớp dừng ở đó, xoay dở dang như cầm khối thật; nhấc tay khi đã kéo quá nửa vòng (45°) thì lớp tự quay nốt thành một nước, kéo chưa tới nửa thì lớp bật trở lại vị trí cũ và không tính là một nước.</li>
+              <li><b>Rung haptic:</b> điện thoại rung nhẹ mỗi khi một lớp quay, rung rõ hơn khi hoàn thành mục tiêu (nếu thiết bị và trình duyệt hỗ trợ rung).</li>
+              <li><b>Các nước vừa đi:</b> mọi nước bạn quay đều được ghi lại theo ký hiệu (U, U′, U2, R…) ở panel “Các nước vừa đi” dưới khối, nước mới nhất được tô đậm; bấm “Sao chép dãy nước đi” để lấy cả dãy. Bấm Quay lại (undo) sẽ xoá nước cuối khỏi danh sách.</li>
               <li><b>Toàn màn hình:</b> bấm nút ⛶ (góc phải trên khối, hoặc nút “Toàn màn hình” dưới khối) để chỉ còn khối Rubik chiếm cả màn hình; bấm ✕ hoặc phím Esc để thoát.</li>
               <li><b>Ký hiệu:</b> U = mặt trên (vàng), D = mặt dưới (trắng), R = phải, L = trái, F = trước (xanh lá), B = sau (xanh dương). Chữ không dấu = xoay 90° theo chiều kim đồng hồ nhìn vào mặt đó; thêm dấu ′ = ngược chiều; thêm số 2 = xoay 180°.</li>
               <li><b>Quay lại / Làm lại:</b> hoàn tác từng nước đã đi, kể cả nước vuốt tay.</li>
               <li><b>Gợi ý:</b> máy tính phân tích trạng thái hiện tại và chỉ nước đi cụ thể tiếp theo trên đường giải ngắn — bấm “Đi luôn nước này” nếu muốn máy đi hộ, hoặc tự đi theo rồi bấm Gợi ý tiếp.</li>
               <li><b>Phím tắt (máy tính):</b> U R F D L B để xoay, giữ Shift để xoay ngược, Ctrl+Z hoàn tác.</li>
+              <li><b>Cài app:</b> bấm nút “📲 Cài app” ở dưới khối để cài trang này như một ứng dụng (mở từ màn hình chính, chơi offline). Nếu nút chưa hiện lời mời cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” / “Thêm vào màn hình chính”.</li>
               <li>Khi luyện tập, khối chỉ xáo đúng phần cần luyện — các phần đã học xong được giữ nguyên để bạn tập trung vào công thức đang học.</li>
             </ul>
           </details>
@@ -922,18 +965,33 @@ let timerStart = null, timerElapsed = 0, timerInt = null;
 let lastHint = null;       // {moves:[{face,power}], basis}
 let view = { yaw: -0.62, pitch: 0.52, scale: 1 };
 const DEFAULT_VIEW = { yaw: -0.62, pitch: 0.52, scale: 1 };
+let holdHL = null;         // {axis, layer} of the layer currently held for a swipe
+let dragRot = null;        // {axis, layer, angle} live finger-follow rotation while dragging a layer
+let moveLog = [];          // notations of the user's moves this round, mirrors undo history
 
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
 let W = 0, H = 0, DPR = 1;
 function fitCanvas() {
   const r = cv.getBoundingClientRect();
-  DPR = Math.min(window.devicePixelRatio || 1, 2.5);
-  W = Math.max(260, r.width); H = Math.max(260, r.height);
+  if (r.width < 10 || r.height < 10) return; // not laid out yet — buffer would mismatch CSS size and look blurry
+  // Render at the device's true pixel density (cap 3 for performance) so the
+  // cube stays sharp on retina / high-DPI phones instead of being upscaled
+  // from a low-resolution buffer.
+  DPR = Math.min(window.devicePixelRatio || 1, 3);
+  W = r.width; H = r.height;
   cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
   render();
 }
 window.addEventListener('resize', fitCanvas);
+if (window.ResizeObserver) {
+  let rsPending = false;
+  new ResizeObserver(() => {
+    if (rsPending) return;
+    rsPending = true;
+    requestAnimationFrame(() => { rsPending = false; fitCanvas(); });
+  }).observe(cv);
+}
 
 // ---------- 3D math ----------
 function rot3(v, axis, ang) { // arbitrary angle, radians, RH about +axis
@@ -975,8 +1033,18 @@ function render() {
       const others = [0, 1, 2].filter(a => Math.abs(s.n[a]) < 0.5);
       const t1 = [0, 0, 0], t2 = [0, 0, 0];
       t1[others[0]] = 1; t2[others[1]] = 1;
-      const t1r = inAnim ? rot3(t1, anim.mv.axis, animQ) : t1;
-      const t2r = inAnim ? rot3(t2, anim.mv.axis, animQ) : t2;
+      let t1r = inAnim ? rot3(t1, anim.mv.axis, animQ) : t1;
+      let t2r = inAnim ? rot3(t2, anim.mv.axis, animQ) : t2;
+      // finger-follow: while a layer is being dragged it sits at the exact
+      // angle of the finger, not yet snapped to a quarter turn. Rotation
+      // about dragRot.axis preserves that coordinate, so the rounded
+      // post-animation centre still identifies layer members exactly.
+      if (dragRot && Math.round(cr[dragRot.axis]) === dragRot.layer) {
+        cr = rot3(cr, dragRot.axis, dragRot.angle);
+        n = rot3(n, dragRot.axis, dragRot.angle);
+        t1r = rot3(t1r, dragRot.axis, dragRot.angle);
+        t2r = rot3(t2r, dragRot.axis, dragRot.angle);
+      }
       const polyOf = (half, off) => [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a, b]) => {
         const q = [cr[0] + (t1r[0] * a + t2r[0] * b) * half + n[0] * off,
                    cr[1] + (t1r[1] * a + t2r[1] * b) * half + n[1] * off,
@@ -986,7 +1054,7 @@ function render() {
       const bodyPts = polyOf(0.5, 0.5);
       const stPts = polyOf(0.435, 0.505);
       const depth = project(viewRot([cr[0] + n[0] * 0.5, cr[1] + n[1] * 0.5, cr[2] + n[2] * 0.5]))[2];
-      faces.push({ bodyPts, stPts, color: FACE_COLORS[s.c], depth, pos: pos0.slice(), n: s.n.slice() });
+      faces.push({ bodyPts, stPts, color: FACE_COLORS[s.c], depth, pos: pos0.slice(), n: s.n.slice(), hl: holdHL ? pos0[holdHL.axis] === holdHL.layer : false });
     }
   }
   faces.sort((a, b) => a.depth - b.depth);
@@ -998,7 +1066,17 @@ function render() {
     ctx.beginPath();
     f.stPts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
     ctx.closePath(); ctx.fillStyle = f.color; ctx.fill();
+    if (holdHL && !f.hl) { ctx.fillStyle = 'rgba(8,10,14,.30)'; ctx.fill(); } // dim everything outside the held layer
     ctx.strokeStyle = 'rgba(0,0,0,.28)'; ctx.lineWidth = 1; ctx.stroke();
+    if (holdHL && f.hl) {
+      // bright outline on the held layer/column so the user sees what will turn
+      ctx.beginPath();
+      f.stPts.forEach((p, i) => i ? ctx.lineTo(p[0], p[1]) : ctx.moveTo(p[0], p[1]));
+      ctx.closePath();
+      ctx.fillStyle = 'rgba(255,255,255,.16)'; ctx.fill();
+      ctx.strokeStyle = '#ffd43b'; ctx.lineWidth = 3.2; ctx.stroke();
+      ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 1.2; ctx.stroke();
+    }
     // hit-test with the WHOLE cubie face (bodyPts), not just the colored sticker:
     // swiping from the black plastic between stickers must turn the layer too,
     // exactly like swiping on a colored sticker. Only points outside the cube
@@ -1009,14 +1087,17 @@ function render() {
 function animAngle() {
   const t = Math.min(1, (performance.now() - anim.t0) / anim.dur);
   const e = 1 - Math.pow(1 - t, 3);
+  if (anim.from !== undefined) return anim.from + (anim.to - anim.from) * e; // snap finish / spring-back
   return e * anim.mv.q * Math.PI / 2;
 }
 function tick() {
   if (anim) {
     if (performance.now() - anim.t0 >= anim.dur) {
-      applyMoveStickers(stickers, anim.mv);
       const done = anim; anim = null;
-      afterMoveCommitted(done.mv);
+      if (!done.noCommit) { // spring-back animations change nothing logically
+        applyMoveStickers(stickers, done.mv);
+        afterMoveCommitted(done.mv);
+      }
       startNext();
     }
     render();
@@ -1050,8 +1131,25 @@ function afterMoveCommitted() {
   updateStats();
   checkGoal();
 }
+// ---------- haptics + move log ----------
+function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* unsupported */ } }
+function renderLog() {
+  const box = document.getElementById('logChips');
+  if (!box) return;
+  document.getElementById('logCount').textContent = moveLog.length ? '(' + moveLog.length + ' nước)' : '';
+  if (!moveLog.length) {
+    box.innerHTML = '<span class="log-empty">Chưa có nước nào. Vuốt trên khối hoặc bấm nút mặt — các nước đi sẽ hiện ở đây theo thứ tự.</span>';
+    return;
+  }
+  box.innerHTML = moveLog.map((n, i) =>
+    '<span class="log-chip' + (i === moveLog.length - 1 ? ' last' : '') + '">' + n.replace(/'/g, '′') + '</span>').join('');
+}
+
 function userMove(mv, dur) {
   hideBanner();
+  buzz(16);
+  moveLog.push(notationOf(mv));
+  renderLog();
   if (roundDone) { /* keep playing freely after done */ }
   enqueueMove(mv, { dur: dur || 150 });
   lastHint = null; document.getElementById('hintOut').classList.remove('show');
@@ -1107,6 +1205,7 @@ function checkGoal() {
   if (goalFor(mode, st)) {
     roundDone = true; stopTimer(); updateStats();
     confetti();
+    buzz([45, 60, 45, 60, 90]);
     const again = mode === 'free' ? 'Xáo trộn ván mới' : 'Luyện tiếp bài này';
     showBanner('<span class="big">🎉 Hoàn thành!</span>Bạn đã đạt mục tiêu của chế độ <b>' + MODES[mode].name + '</b> — ' + moveCount + ' nước, thời gian ' + fmtTime(elapsedMs()) + '.',
       true,
@@ -1121,6 +1220,8 @@ window.hideBanner = hideBanner;
 function setStickers(st) {
   stickers = st; queue = []; anim = null;
   history = []; redoStack = []; moveCount = 0;
+  moveLog = []; renderLog();
+  if (holdHL) setHold(null);
   timerElapsed = 0; stopTimer(); roundDone = false;
   lastHint = null; document.getElementById('hintOut').classList.remove('show');
   render(); updateStats();
@@ -1171,37 +1272,151 @@ function canvasPoint(e) {
   const r = cv.getBoundingClientRect();
   return [e.clientX - r.left, e.clientY - r.top];
 }
-cv.addEventListener('pointerdown', e => {
-  e.preventDefault();
-  cv.setPointerCapture(e.pointerId);
-  const pt = canvasPoint(e);
-  let hit = null;
+function hitTest(pt) {
+  if (!drawnFaces.length) render();
   for (let i = drawnFaces.length - 1; i >= 0; i--) {
-    if (ptInPoly(pt, drawnFaces[i].pts)) { hit = drawnFaces[i]; break; }
+    if (ptInPoly(pt, drawnFaces[i].pts)) return drawnFaces[i];
   }
-  drag = { start: pt, last: pt, hit, turned: false, viewMoved: false };
+  // Fallback: a touch that starts anywhere on the cube's silhouette (a hair
+  // into a gap between stickers, a rounding miss…) must still grab a layer —
+  // never fall through to view rotation. Take the nearest drawn sticker when
+  // it is within about one sticker of the touch point; genuinely empty space
+  // around the cube stays a view drag.
+  let best = null, bestD = Infinity;
+  for (const f of drawnFaces) {
+    const cx = (f.pts[0][0] + f.pts[1][0] + f.pts[2][0] + f.pts[3][0]) / 4;
+    const cy = (f.pts[0][1] + f.pts[1][1] + f.pts[2][1] + f.pts[3][1]) / 4;
+    const d = Math.hypot(pt[0] - cx, pt[1] - cy);
+    if (d < bestD) { bestD = d; best = f; }
+  }
+  const stickerPx = Math.min(W, H) * 0.183 * view.scale;
+  return (best && bestD <= stickerPx * 1.2) ? best : null;
+}
+let lastPointerDownAt = 0;
+function beginDrag(pt, src) {
+  drag = { start: pt, last: pt, hit: hitTest(pt), src, lock: null, theta: 0, overHalf: false };
+}
+cv.addEventListener('pointerdown', e => {
+  lastPointerDownAt = Date.now();
+  try { cv.setPointerCapture(e.pointerId); } catch (err) { /* capture must never kill the drag */ }
+  beginDrag(canvasPoint(e), 'pointer');
+  e.preventDefault();
 });
-cv.addEventListener('pointermove', e => {
+// Touch fallback: some in-app webviews deliver Pointer Events unreliably;
+// raw touch events drive the exact same drag logic there. A touch that a
+// pointerdown already claimed (same gesture, moments earlier) is ignored.
+cv.addEventListener('touchstart', e => {
+  if (drag && drag.src === 'pointer' && Date.now() - lastPointerDownAt < 800) return;
+  const t = e.changedTouches[0]; if (!t) return;
+  beginDrag(canvasPoint(t), 'touch');
+  e.preventDefault();
+}, { passive: false });
+function holdLabel(mv) {
+  const fm = moveToFaceMove(mv);
+  return 'Đang giữ lớp <b>' + notationOf(mv).replace(/'/g, '′') + '</b>' +
+    (fm ? ' · mặt ' + FACE_SHORT[fm.face] : ' · lớp giữa');
+}
+function setHold(mv) {
+  holdHL = mv ? { axis: mv.axis, layer: mv.layer } : null;
+  const tag = document.getElementById('holdTag');
+  if (mv) {
+    tag.innerHTML = holdLabel(mv) + ' — lớp đang đi theo ngón tay';
+    tag.classList.add('show');
+  } else {
+    tag.classList.remove('show');
+  }
+  render();
+}
+function updateHoldTag(mv, theta) {
+  const tag = document.getElementById('holdTag');
+  if (!tag.classList.contains('show')) return;
+  const deg = Math.round(Math.abs(theta) * 180 / Math.PI);
+  const eff = { axis: mv.axis, layer: mv.layer, q: mv.q * (theta < 0 ? -1 : 1) };
+  tag.innerHTML = holdLabel(eff) + ' — ' + deg + '° · ' +
+    (Math.abs(theta) >= Math.PI / 4 ? 'thả tay: quay nốt ✓' : 'kéo quá 45° mới quay · thả sớm sẽ bật lại');
+}
+function dragMoveTo(pt) {
   if (!drag) return;
-  const pt = canvasPoint(e);
   const dx = pt[0] - drag.last[0], dy = pt[1] - drag.last[1];
   drag.last = pt;
-  if (!drag.hit) {
+  if (!drag.hit) { // started outside the cube: orbit the view
     view.yaw += dx * 0.008;
     view.pitch += dy * 0.008;
     view.pitch = Math.max(-1.35, Math.min(1.35, view.pitch));
-    drag.viewMoved = true;
     render();
     return;
   }
-  if (drag.turned) return;
   const tdx = pt[0] - drag.start[0], tdy = pt[1] - drag.start[1];
-  if (Math.hypot(tdx, tdy) < 22) return;
-  const mv = swipeToMove(drag.hit, tdx, tdy);
-  if (mv) { drag.turned = true; userMove(mv, 130); }
-});
-cv.addEventListener('pointerup', () => { drag = null; });
-cv.addEventListener('pointercancel', () => { drag = null; });
+  if (!drag.lock) {
+    if (Math.hypot(tdx, tdy) < 9) return; // dead zone: ignore jitter, decide nothing yet
+    const mv = swipeToMove(drag.hit, tdx, tdy);
+    if (!mv) return;
+    // Lock the layer + direction for the rest of this drag, and measure how
+    // fast the grabbed surface point moves on screen per radian, so the
+    // layer can follow the finger 1:1.
+    const rs = [drag.hit.pos[0] + drag.hit.n[0] * 0.5, drag.hit.pos[1] + drag.hit.n[1] * 0.5, drag.hit.pos[2] + drag.hit.n[2] * 0.5];
+    const A = [0, 0, 0]; A[mv.axis] = mv.q;
+    const v = [A[1] * rs[2] - A[2] * rs[1], A[2] * rs[0] - A[0] * rs[2], A[0] * rs[1] - A[1] * rs[0]];
+    const p0 = project(viewRot(rs));
+    const p1 = project(viewRot([rs[0] + v[0], rs[1] + v[1], rs[2] + v[2]]));
+    const vel = Math.hypot(p1[0] - p0[0], p1[1] - p0[1]);
+    if (vel < 1) return;
+    drag.lock = { mv, dirX: (p1[0] - p0[0]) / vel, dirY: (p1[1] - p0[1]) / vel, vel };
+    setHold(mv); // highlight the layer/column being held, as before
+    buzz(8);
+  }
+  const L = drag.lock;
+  const proj = tdx * L.dirX + tdy * L.dirY;
+  let theta = proj / L.vel; // signed radians travelled in the locked direction
+  theta = Math.max(-Math.PI / 2 * 1.08, Math.min(Math.PI / 2 * 1.08, theta));
+  drag.theta = theta;
+  dragRot = { axis: L.mv.axis, layer: L.mv.layer, angle: L.mv.q * theta };
+  const over = Math.abs(theta) >= Math.PI / 4;
+  if (over !== drag.overHalf) { drag.overHalf = over; if (over) buzz(10); }
+  updateHoldTag(L.mv, theta);
+  render();
+}
+function finishDrag(commitAllowed) {
+  if (!drag) return;
+  const d = drag; drag = null;
+  const L = d.lock;
+  dragRot = null;
+  if (holdHL) setHold(null);
+  if (!L) { render(); return; }
+  const theta = d.theta;
+  const mv = { axis: L.mv.axis, layer: L.mv.layer, q: L.mv.q * (theta < 0 ? -1 : 1) };
+  const fromAngle = L.mv.q * theta;
+  if (commitAllowed && Math.abs(theta) >= Math.PI / 4) {
+    // Past half a quarter turn: run the rest of the way and record the move.
+    if (!anim && !queue.length) {
+      hideBanner();
+      buzz(16);
+      moveLog.push(notationOf(mv)); renderLog();
+      history.push(mv); redoStack = [];
+      lastHint = null; document.getElementById('hintOut').classList.remove('show');
+      anim = { mv, t0: performance.now(), dur: 130, from: fromAngle, to: mv.q * Math.PI / 2 };
+      requestAnimationFrame(tick);
+      updateStats();
+    } else {
+      userMove(mv, 130); // a previous animation is still running: queue it normally
+    }
+  } else if (Math.abs(fromAngle) > 0.01 && !anim) {
+    // Under half: spring back to the original position — no move is recorded.
+    buzz(6);
+    anim = { mv: { axis: L.mv.axis, layer: L.mv.layer, q: mv.q }, t0: performance.now(), dur: 150, from: fromAngle, to: 0, noCommit: true };
+    requestAnimationFrame(tick);
+  } else {
+    render();
+  }
+}
+cv.addEventListener('pointermove', e => { if (drag && drag.src === 'pointer') dragMoveTo(canvasPoint(e)); });
+cv.addEventListener('pointerup', () => { if (drag && drag.src === 'pointer') finishDrag(true); });
+cv.addEventListener('pointercancel', () => { if (drag && drag.src === 'pointer') finishDrag(false); });
+cv.addEventListener('touchmove', e => {
+  if (drag && drag.src === 'touch') { const t = e.changedTouches[0]; if (t) dragMoveTo(canvasPoint(t)); e.preventDefault(); }
+}, { passive: false });
+cv.addEventListener('touchend', e => { if (drag && drag.src === 'touch') { finishDrag(true); e.preventDefault(); } }, { passive: false });
+cv.addEventListener('touchcancel', () => { if (drag && drag.src === 'touch') finishDrag(false); });
 
 function swipeToMove(hit, dx, dy) {
   const n = hit.n; // unit axis in cube space
@@ -1293,6 +1508,17 @@ function computeHint() {
 }
 
 // ---------- controls wiring ----------
+document.getElementById('btnCopyLog').addEventListener('click', () => {
+  const note = document.getElementById('copyNote');
+  if (!moveLog.length) { note.textContent = 'Chưa có nước đi nào để sao chép.'; return; }
+  const text = moveLog.join(' ');
+  const done = () => { note.textContent = 'Đã sao chép dãy ' + moveLog.length + ' nước đi.'; };
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(text).then(done).catch(() => { note.textContent = 'Không sao chép tự động được — dãy nước đi của bạn: ' + text; });
+  } else {
+    note.textContent = 'Dãy nước đi của bạn: ' + text;
+  }
+});
 document.getElementById('btnHint').addEventListener('click', computeHint);
 document.getElementById('btnHintAgain').addEventListener('click', computeHint);
 document.getElementById('btnDoHint').addEventListener('click', () => {
@@ -1302,6 +1528,7 @@ document.getElementById('btnUndo').addEventListener('click', () => {
   if (!history.length) return;
   const mv = history.pop();
   redoStack.push(mv);
+  moveLog.pop(); renderLog();
   pendingUndoAdjust = true;
   enqueueMove(invertMove(mv), { fromUndoRedo: true, dur: 120 });
   lastHint = null; document.getElementById('hintOut').classList.remove('show');
@@ -1312,6 +1539,7 @@ document.getElementById('btnRedo').addEventListener('click', () => {
   if (!redoStack.length) return;
   const mv = redoStack.pop();
   history.push(mv);
+  moveLog.push(notationOf(mv)); renderLog();
   enqueueMove(mv, { fromUndoRedo: true, dur: 120 });
   lastHint = null; document.getElementById('hintOut').classList.remove('show');
   updateStats();
@@ -1443,6 +1671,83 @@ document.addEventListener('keydown', e => {
 fitCanvas();
 startRound('free');
 
+</script>
+<script>
+// ================= PWA: install prompt + service worker =================
+(function () {
+  var panel = document.getElementById('installPanel');
+  var btn = document.getElementById('btnInstall');
+  var note = document.getElementById('installNote');
+  var deferredPrompt = null;
+
+  function isStandalone() {
+    try {
+      return (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+        window.navigator.standalone === true;
+    } catch (e) { return false; }
+  }
+  // Already installed / running as the app: no need to offer installation.
+  if (isStandalone() && panel) panel.classList.add('hide');
+
+  window.addEventListener('beforeinstallprompt', function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    if (panel) panel.classList.remove('hide');
+    if (note) note.textContent = '';
+  });
+  window.addEventListener('appinstalled', function () {
+    deferredPrompt = null;
+    if (panel) panel.classList.add('hide');
+  });
+
+  if (btn) btn.addEventListener('click', function () {
+    if (deferredPrompt) {
+      var p = deferredPrompt;
+      deferredPrompt = null;
+      try {
+        // p is the BeforeInstallPromptEvent: its prompt method is the
+        // browser's own install invitation, not a window dialog.
+        var showInstallInvitation = p.prompt;
+        if (showInstallInvitation) showInstallInvitation.call(p);
+        if (p.userChoice && p.userChoice.then) {
+          p.userChoice.then(function (choice) {
+            if (choice && choice.outcome === 'accepted') {
+              if (panel) panel.classList.add('hide');
+            } else if (note) {
+              note.textContent = 'Bạn đã đóng lời mời cài đặt — bấm lại nút này khi muốn cài, hoặc dùng menu ⋮ của Chrome.';
+            }
+          }).catch(function () { /* ignore */ });
+        }
+      } catch (err) { /* fall through to manual instructions */ }
+      return;
+    }
+    // Chrome did not offer the native prompt (not eligible yet, desktop
+    // without prompt, or a browser without beforeinstallprompt): give the
+    // manual route instead of a dead button.
+    var isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
+    if (note) {
+      note.textContent = isIOS
+        ? 'Trên iPhone/iPad: bấm nút Chia sẻ (Share) của trình duyệt rồi chọn “Thêm vào Màn hình chính”.'
+        : 'Mở menu ⋮ ở góc phải trên của Chrome → chọn “Cài đặt ứng dụng” (hoặc “Thêm vào màn hình chính”) để cài Rubik 3x3 3D như một app.';
+    }
+  });
+
+  // Service worker: relative path so it works under any subpath (e.g.
+  // GitHub Pages /rubik/). Fully guarded — preview environments without
+  // service-worker support must keep the page running with no errors.
+  try {
+    if ('serviceWorker' in navigator) {
+      var register = function () {
+        try {
+          var reg = navigator.serviceWorker.register('sw.js');
+          if (reg && reg.catch) reg.catch(function () { /* unsupported here — page still works */ });
+        } catch (e) { /* ignore */ }
+      };
+      if (document.readyState === 'complete') register();
+      else window.addEventListener('load', register);
+    }
+  } catch (e) { /* ignore */ }
+})();
 </script>
 </body>
 </html>
