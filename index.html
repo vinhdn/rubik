@@ -98,7 +98,7 @@
       .banner .big { font-size: 19px; font-weight: 800; display: block; margin-bottom: 2px; }
       .banner button { margin-top: 8px; margin-right: 8px; }
       .controls { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 12px; }
-      @media (min-width: 640px) { .controls { grid-template-columns: repeat(6, 1fr); } }
+      @media (min-width: 640px) { .controls { grid-template-columns: repeat(7, 1fr); } }
       .controls button, .btn {
         min-height: 46px; border-radius: 12px; border: 1px solid var(--line);
         background: var(--surface); color: var(--ink); font-weight: 700; font-size: 14.5px;
@@ -142,11 +142,32 @@
       }
       .alg .mv.hl { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); }
       .mode-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
-      .hint-out { margin-top: 10px; display: none; border-top: 1px dashed var(--line); padding-top: 10px; }
+      .hint-out { display: none; }
       .hint-out.show { display: block; }
+      .hint-card { border-color: var(--warn-line); background: var(--surface); }
+      .hint-card h3 { display: flex; align-items: center; gap: 6px; }
       .hint-move { font-size: 30px; font-weight: 900; letter-spacing: .5px; }
       .hint-text { font-size: 14.5px; line-height: 1.5; margin-top: 2px; }
       .hint-note { font-size: 12.5px; color: var(--muted); margin-top: 6px; line-height: 1.45; }
+      .controls button:disabled { opacity: .45; cursor: default; }
+      .demo-card { display: none; border-color: var(--warn-line); }
+      .demo-card.show { display: block; }
+      .demo-card h3 { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+      .demo-step { color: var(--accent); font-weight: 800; font-size: 14.5px; white-space: nowrap; }
+      .demo-now { display: flex; align-items: center; gap: 12px; margin-top: 2px; min-height: 40px; }
+      .demo-big { font-size: 34px; font-weight: 900; letter-spacing: .5px; min-width: 58px; }
+      .demo-desc { font-size: 14.5px; line-height: 1.5; }
+      .demo-strip { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 10px; }
+      .demo-chip {
+        display: inline-block; min-width: 30px; text-align: center; padding: 4px 7px; border-radius: 7px;
+        background: var(--surface2); border: 1px solid var(--line); font-weight: 800; font-size: 14px;
+      }
+      .demo-chip.done { opacity: .35; }
+      .demo-chip.now { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .demo-ctrl { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+      .demo-speed { display: inline-flex; gap: 5px; align-items: center; margin-left: auto; }
+      .demo-speed .lbl { font-size: 12.5px; color: var(--muted); font-weight: 700; }
+      .demo-speed .btn.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
       .formula-card { border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 9px; background: var(--surface2); }
       .formula-card .t { font-weight: 800; font-size: 15px; }
       .formula-card .d { font-size: 13.5px; color: var(--muted); line-height: 1.5; margin-top: 3px; }
@@ -191,10 +212,34 @@
             <div class="confetti" id="confetti"></div>
           </div>
 
+          <div class="panel demo-card" id="demoCard" aria-live="polite">
+            <h3><span>▶ Demo giải — AI tự quay</span><span class="demo-step" id="demoStep"></span></h3>
+            <div class="demo-now"><span class="demo-big" id="demoBig"></span><span class="demo-desc" id="demoDesc"></span></div>
+            <div class="demo-strip" id="demoStrip"></div>
+            <div class="demo-ctrl">
+              <button class="btn primary small" id="btnDemoPause">⏸ Tạm dừng</button>
+              <button class="btn small" id="btnDemoStop">⏹ Dừng demo</button>
+              <span class="demo-speed"><span class="lbl">Tốc độ:</span><button class="btn small demo-speed-btn" data-speed="slow">Chậm</button><button class="btn small demo-speed-btn" data-speed="med">Vừa</button><button class="btn small demo-speed-btn" data-speed="fast">Nhanh</button></span>
+            </div>
+            <div class="hint-note" id="demoNote"></div>
+          </div>
+
+          <div class="panel hint-out hint-card" id="hintOut" aria-live="polite">
+            <h3>💡 Gợi ý nước đi</h3>
+            <div class="hint-move" id="hintMove"></div>
+            <div class="hint-text" id="hintText"></div>
+            <div class="mode-actions">
+              <button class="btn primary small" id="btnDoHint">Đi luôn nước này</button>
+              <button class="btn small" id="btnHintAgain">Gợi ý khác</button>
+            </div>
+            <div class="hint-note" id="hintNote"></div>
+          </div>
+
           <div class="banner" id="banner"></div>
 
           <div class="controls">
             <button id="btnHint" class="primary" style="background:var(--accent);color:var(--accent-ink);border-color:var(--accent)">💡 Gợi ý</button>
+            <button id="btnDemo">▶ Demo giải</button>
             <button id="btnUndo">↩ Quay lại</button>
             <button id="btnRedo">↪ Làm lại</button>
             <button id="btnScramble">🔀 Xáo trộn</button>
@@ -235,15 +280,6 @@
               <button class="btn primary" id="btnStartMode">Bắt đầu luyện</button>
               <button class="btn" id="btnShuffleMode">Xáo lại bài này</button>
             </div>
-            <div class="hint-out" id="hintOut">
-              <div class="hint-move" id="hintMove"></div>
-              <div class="hint-text" id="hintText"></div>
-              <div class="mode-actions">
-                <button class="btn primary small" id="btnDoHint">Đi luôn nước này</button>
-                <button class="btn small" id="btnHintAgain">Gợi ý khác</button>
-              </div>
-              <div class="hint-note" id="hintNote"></div>
-            </div>
           </div>
 
           <div class="panel">
@@ -263,6 +299,7 @@
               <li><b>Quay lại / Làm lại:</b> hoàn tác từng nước đã đi, kể cả nước vuốt tay.</li>
               <li><b>Tự động lưu ván:</b> trạng thái khối, các nước đã đi, thời gian và góc nhìn được tự lưu sau mỗi thay đổi — lỡ bấm Back hay đóng trang, mở lại là thấy dòng “Đã khôi phục ván trước” và chơi tiếp đúng ván dở. Bấm xáo trộn / ván mới thì ván đã lưu được thay bằng ván mới.</li>
               <li><b>Gợi ý:</b> máy tính phân tích trạng thái hiện tại và chỉ nước đi cụ thể tiếp theo trên đường giải ngắn — bấm “Đi luôn nước này” nếu muốn máy đi hộ, hoặc tự đi theo rồi bấm Gợi ý tiếp.</li>
+              <li><b>Demo giải:</b> bấm “▶ Demo giải” để máy tự quay chậm toàn bộ lời giải từ trạng thái hiện tại — thẻ demo ngay dưới khối hiện “Bước x/N”, nước đang quay chữ lớn và dải các nước (nước đang đi tô sáng, nước đã qua mờ đi). Có nút Tạm dừng / Tiếp tục, nút Dừng (giữ nguyên các nước đã đi) và 3 tốc độ Chậm / Vừa / Nhanh. Đang demo mà vuốt xoay lớp hoặc bấm nút nước đi thì demo dừng ngay; các nước demo đã đi vẫn nằm trong log và undo được như nước thường. Ở chế độ luyện tập, demo chỉ quay tới khi đạt mục tiêu của bước đang luyện rồi dừng.</li>
               <li><b>Phím tắt (máy tính):</b> U R F D L B để xoay, giữ Shift để xoay ngược, Ctrl+Z hoàn tác.</li>
               <li><b>Cài app:</b> bấm nút “📲 Cài app” ở dưới khối để cài trang này như một ứng dụng (mở từ màn hình chính, chơi offline). Nếu nút chưa hiện lời mời cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” / “Thêm vào màn hình chính”.</li>
               <li>Khi luyện tập, khối chỉ xáo đúng phần cần luyện — các phần đã học xong được giữ nguyên để bạn tập trung vào công thức đang học.</li>
@@ -1269,6 +1306,7 @@ function renderLog() {
 }
 
 function userMove(mv, dur) {
+  if (isDemoActive()) interruptDemo(); // thao tác tay giữa demo: demo dừng ngay, nước tay vẫn đi bình thường
   hideBanner();
   buzz(16);
   moveLog.push(spatialNotationOf(mv)); // chữ theo vị trí tại thời điểm đi nước này
@@ -1429,6 +1467,7 @@ window.hideBanner = hideBanner;
 
 // ---------- rounds / modes ----------
 function setStickers(st) {
+  cancelDemoSilent(); // ván mới / giải lại: huỷ demo đang chạy (nếu có) và ẩn thẻ demo
   stickers = st; queue = []; anim = null;
   history = []; redoStack = []; moveCount = 0;
   moveLog = []; renderLog();
@@ -1528,7 +1567,11 @@ function isFlingCommit(theta, vel) {
     theta !== 0 && Math.sign(vel) === Math.sign(theta);
 }
 function beginDrag(pt, src) {
-  drag = { start: pt, last: pt, hit: hitTest(pt), src, lock: null, theta: 0, overCommit: false, samples: [] };
+  let hit = hitTest(pt);
+  // Vuốt trúng khối (xoay lớp) giữa lúc demo đang chạy: dừng demo ngay rồi
+  // mới bắt đầu kéo tay. Vuốt ngoài khối chỉ xoay góc nhìn — demo chạy tiếp.
+  if (hit && isDemoActive()) { interruptDemo(); hit = hitTest(pt); }
+  drag = { start: pt, last: pt, hit, src, lock: null, theta: 0, overCommit: false, samples: [] };
 }
 cv.addEventListener('pointerdown', e => {
   lastPointerDownAt = Date.now();
@@ -1751,6 +1794,297 @@ function computeHint() {
   out.classList.add('show');
 }
 
+// ---------- Demo giải: AI tự quay chậm theo lời giải ----------
+// Dùng chính bộ giải Kociemba của phần Gợi ý để tính TOÀN BỘ lời giải từ
+// trạng thái hiện tại, rồi tự thực thi từng nước với animation chậm (mặc
+// định ~720ms/nước + ~260ms nghỉ) để người xem theo kịp. Ký hiệu + mô tả
+// của từng nước được chốt theo KHUNG VỊ TRÍ tại thời điểm BẮT ĐẦU demo
+// (khớp định nghĩa mặt theo vị trí); nước thực thi là nước vật lý nội bộ
+// của bộ giải nên luôn đúng lớp dù người xem có xoay góc nhìn giữa demo.
+// Ở chế độ luyện tập, demo cắt lời giải ngay tại nước đầu tiên đạt mục
+// tiêu của bước luyện hiện tại rồi dừng (không giải nốt cả khối).
+// Các nước demo được ghi vào history + moveLog đúng như nước đi tay (tại
+// thời điểm nước quay xong) nên undo/redo sau demo hoạt động bình thường.
+// Demo tự lái qua dragRot (cùng cơ chế hiển thị lớp đang kéo theo ngón
+// tay) bằng vòng lặp rAF riêng — KHÔNG dùng hàng đợi anim chung — nên
+// Tạm dừng đóng băng được cả góc quay dở dang và Dừng thu hồi sạch nước
+// đang quay dở, chỉ giữ các nước đã hoàn thành.
+const DEMO_SPEEDS = {
+  slow: { dur: 720, gap: 260, label: 'Chậm' },
+  med:  { dur: 420, gap: 160, label: 'Vừa' },
+  fast: { dur: 230, gap: 90,  label: 'Nhanh' }
+};
+let demo = null;          // {moves:[{mv,notation,desc}], idx, total, state, phase, speed, practice, cur, raf, timer}
+let demoSpeedPref = 'slow';
+let demoPreparing = false;
+function isDemoActive() { return !!demo && (demo.state === 'playing' || demo.state === 'paused'); }
+function demoEase(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
+function setDemoLocks(on) {
+  const ids = ['btnHint', 'btnHintAgain', 'btnDoHint', 'btnDemo', 'btnScramble', 'btnReset', 'btnStartMode', 'btnShuffleMode', 'btnUndo', 'btnRedo'];
+  for (const id of ids) { const el = document.getElementById(id); if (el) el.disabled = on; }
+  document.querySelectorAll('#modeChips .chip').forEach(ch => { ch.disabled = on; });
+  document.querySelectorAll('.formula-apply').forEach(b => { b.disabled = on; });
+  if (!on) updateStats(); // trả lại trạng thái disabled đúng của undo/redo theo history
+}
+function renderDemoSpeed() {
+  const cur = demo ? demo.speed : demoSpeedPref;
+  document.querySelectorAll('.demo-speed-btn').forEach(b => b.classList.toggle('on', b.dataset.speed === cur));
+}
+function renderDemoProgress() {
+  if (!demo) return;
+  const card = document.getElementById('demoCard');
+  card.classList.add('show');
+  const total = demo.total;
+  const done = demo.state === 'done';
+  const stopped = demo.state === 'stopped';
+  document.getElementById('demoStep').textContent =
+    'Bước ' + (done ? total : stopped ? demo.idx : Math.min(demo.idx + 1, total)) + '/' + total;
+  const big = document.getElementById('demoBig');
+  const desc = document.getElementById('demoDesc');
+  if (done) {
+    big.textContent = '✓';
+    desc.textContent = demo.practice
+      ? 'Đã đạt mục tiêu của bước luyện này sau ' + total + ' nước demo.'
+      : 'Đã giải xong sau ' + total + ' nước.';
+  } else if (stopped) {
+    big.textContent = demo.idx + '/' + total;
+    desc.textContent = 'Demo đã dừng ở bước ' + demo.idx + '/' + total + '.';
+  } else {
+    const item = demo.moves[Math.min(demo.idx, total - 1)];
+    big.textContent = item.notation.replace(/'/g, '′');
+    desc.textContent = item.desc + (demo.state === 'paused' ? ' (Đang tạm dừng)' : '');
+  }
+  document.getElementById('demoStrip').innerHTML = demo.moves.map((m, i) => {
+    const cls = done || i < demo.idx ? ' done' : (i === demo.idx && !stopped ? ' now' : '');
+    return '<span class="demo-chip' + cls + '">' + m.notation.replace(/'/g, '′') + '</span>';
+  }).join('');
+  const pauseBtn = document.getElementById('btnDemoPause');
+  pauseBtn.disabled = done || stopped;
+  pauseBtn.textContent = demo.state === 'paused' ? '▶ Tiếp tục' : '⏸ Tạm dừng';
+  document.getElementById('btnDemoStop').disabled = done || stopped;
+  renderDemoSpeed();
+}
+function showDemoMessage(bigText, noteText) {
+  cancelDemoSilent();
+  document.getElementById('demoStep').textContent = '';
+  document.getElementById('demoBig').textContent = bigText;
+  document.getElementById('demoDesc').textContent = '';
+  document.getElementById('demoStrip').innerHTML = '';
+  document.getElementById('demoNote').textContent = noteText;
+  document.getElementById('btnDemoPause').disabled = true;
+  document.getElementById('btnDemoStop').disabled = true;
+  document.getElementById('demoCard').classList.add('show');
+  renderDemoSpeed();
+}
+function cancelDemoSilent() {
+  demoPreparing = false; // huỷ luôn cả lịch tự bắt đầu demo đang chờ bộ giải nạp
+  if (demo) {
+    if (demo.raf) cancelAnimationFrame(demo.raf);
+    if (demo.timer) clearTimeout(demo.timer);
+    demo = null;
+    if (dragRot) { dragRot = null; }
+    if (holdHL) { holdHL = null; }
+  }
+  setDemoLocks(false);
+  const card = document.getElementById('demoCard');
+  if (card) card.classList.remove('show');
+  render();
+}
+function demoRunCurrent() {
+  if (!demo || demo.state !== 'playing') return;
+  if (demo.idx >= demo.total) { demoFinish(); return; }
+  const item = demo.moves[demo.idx];
+  demo.phase = 'anim';
+  holdHL = { axis: item.mv.axis, layer: item.mv.layer }; // highlight lớp đang quay như khi giữ tay
+  renderDemoProgress();
+  let vq = ((item.mv.q % 4) + 4) % 4; // quay theo đường ngắn nhất: q=±3 hiển thị như ∓1 (kết quả vật lý như nhau)
+  if (vq === 3) vq = -1;
+  const base = DEMO_SPEEDS[demo.speed].dur;
+  demo.cur = { mv: item.mv, t0: performance.now(), elapsed: 0, dur: base * (Math.abs(vq) === 2 ? 1.3 : 1), visualQ: vq };
+  demo.raf = requestAnimationFrame(demoAnimFrame);
+}
+function demoAnimFrame(now) {
+  if (!demo || demo.state !== 'playing' || demo.phase !== 'anim' || !demo.cur) return;
+  const cur = demo.cur;
+  const t = Math.min(1, (cur.elapsed + (now - cur.t0)) / cur.dur);
+  dragRot = { axis: cur.mv.axis, layer: cur.mv.layer, angle: cur.visualQ * Math.PI / 2 * demoEase(t) };
+  render();
+  if (t >= 1) { demoCommitCurrent(); return; }
+  demo.raf = requestAnimationFrame(demoAnimFrame);
+}
+function demoCommitCurrent() {
+  const item = demo.moves[demo.idx];
+  const mv = item.mv;
+  dragRot = null; holdHL = null;
+  history.push(mv); redoStack = [];
+  moveLog.push(item.notation); renderLog(); // ký hiệu đã chốt theo khung lúc bắt đầu demo
+  applyMoveStickers(stickers, mv);
+  afterMoveCommitted(mv); // tăng bộ đếm, kiểm tra mục tiêu, tự lưu ván — như một nước thường
+  demo.idx++;
+  if (demo.idx >= demo.total) { demoFinish(); return; }
+  demo.phase = 'gap';
+  renderDemoProgress();
+  setDemoLocks(true); // updateStats trong afterMoveCommitted vừa mở lại undo/redo — khoá lại khi demo còn chạy
+  demo.timer = setTimeout(() => {
+    if (demo && demo.state === 'playing' && demo.phase === 'gap') demoRunCurrent();
+  }, DEMO_SPEEDS[demo.speed].gap);
+}
+function demoFinish() {
+  if (!demo) return;
+  if (demo.raf) cancelAnimationFrame(demo.raf);
+  if (demo.timer) clearTimeout(demo.timer);
+  dragRot = null; holdHL = null;
+  demo.state = 'done'; demo.phase = 'idle';
+  setDemoLocks(false);
+  document.getElementById('demoNote').textContent = demo.practice
+    ? 'Demo hoàn thành: đã đạt mục tiêu của bước luyện hiện tại sau ' + demo.total + ' nước. Các nước demo đã ghi vào log — bấm Quay lại (undo) nếu muốn tự làm lại.'
+    : 'Đã giải xong sau ' + demo.total + ' nước. Các nước demo đã ghi vào log nước đi và undo/redo được như nước thường.';
+  renderDemoProgress();
+  render();
+  if (!roundDone) { buzz([45, 60, 45, 60, 90]); confetti(); } // nếu checkGoal đã ăn mừng (ván đang chơi) thì không ăn mừng trùng
+  saveState();
+}
+function stopDemo(manual) {
+  if (!isDemoActive()) return;
+  if (demo.raf) cancelAnimationFrame(demo.raf);
+  if (demo.timer) clearTimeout(demo.timer);
+  dragRot = null; holdHL = null; // nước đang quay dở bị thu hồi — chỉ các nước đã quay xong được giữ
+  demo.state = 'stopped'; demo.phase = 'idle';
+  setDemoLocks(false);
+  document.getElementById('demoNote').textContent = (manual
+    ? 'Demo đã dừng vì bạn tự thao tác trên khối. '
+    : 'Đã dừng demo. ') +
+    'Đã đi được ' + demo.idx + '/' + demo.total + ' nước — các nước đó vẫn giữ nguyên và undo/redo được như thường.';
+  renderDemoProgress();
+  render();
+  saveState();
+}
+function interruptDemo() { stopDemo(true); }
+function pauseDemo() {
+  if (!demo || demo.state !== 'playing') return;
+  if (demo.phase === 'anim' && demo.cur) {
+    // đóng băng đúng góc đang quay dở: chốt phần thời gian đã trôi qua
+    const now = performance.now();
+    demo.cur.elapsed = Math.min(demo.cur.dur, demo.cur.elapsed + (now - demo.cur.t0));
+    dragRot = { axis: demo.cur.mv.axis, layer: demo.cur.mv.layer, angle: demo.cur.visualQ * Math.PI / 2 * demoEase(demo.cur.elapsed / demo.cur.dur) };
+  }
+  if (demo.raf) cancelAnimationFrame(demo.raf);
+  if (demo.timer) clearTimeout(demo.timer);
+  demo.state = 'paused';
+  document.getElementById('demoNote').textContent = 'Đã tạm dừng ở bước ' + Math.min(demo.idx + 1, demo.total) + '/' + demo.total + ' — khối đang đứng yên, bấm Tiếp tục để chạy tiếp đúng bước này.';
+  renderDemoProgress();
+  render();
+}
+function resumeDemo() {
+  if (!demo || demo.state !== 'paused') return;
+  demo.state = 'playing';
+  document.getElementById('demoNote').textContent = '';
+  renderDemoProgress();
+  if (demo.phase === 'anim' && demo.cur) {
+    demo.cur.t0 = performance.now();
+    demo.raf = requestAnimationFrame(demoAnimFrame);
+  } else {
+    demo.phase = 'gap';
+    demo.timer = setTimeout(() => {
+      if (demo && demo.state === 'playing' && demo.phase === 'gap') demoRunCurrent();
+    }, 120);
+  }
+}
+function startDemo() {
+  if (isDemoActive() || demoPreparing) return;
+  if (anim || queue.length) {
+    showDemoMessage('…', 'Đang quay nốt nước hiện tại — chờ quay xong rồi bấm Demo giải lại.');
+    return;
+  }
+  const st = logicalStickers();
+  if (isSolvedUniform(st)) {
+    showDemoMessage('✓', 'Khối đã giải xong rồi — không cần chạy demo nữa. Xáo trộn một ván mới để xem AI giải từ đầu.');
+    return;
+  }
+  const practice = roundActive && mode !== 'free';
+  if (practice && goalFor(mode, st)) {
+    showDemoMessage('✓', 'Bước luyện này đã đạt mục tiêu rồi — không cần chạy demo. Bấm “Luyện tiếp bài này” để làm lại từ đầu.');
+    return;
+  }
+  if (!Solver.ready) {
+    demoPreparing = true;
+    showDemoMessage('…', 'Đang chuẩn bị bộ giải lần đầu (mất vài giây) — demo sẽ tự bắt đầu ngay sau đó.');
+    demoPreparing = true; // showDemoMessage vừa huỷ cờ qua cancelDemoSilent — bật lại cho đúng lịch hẹn này
+    setTimeout(() => {
+      if (!demoPreparing) return; // người dùng đã chuyển ván / huỷ trong lúc chờ — không tự chạy nữa
+      demoPreparing = false;
+      try { Solver.init(); } catch (e) { /* thử lại ở lần bấm sau */ }
+      if (Solver.ready) startDemo();
+    }, 80);
+    return;
+  }
+  const norm = normalizedFacelets(st);
+  let sol = null;
+  try { sol = Solver.solve(norm.facelets); } catch (err) { sol = null; }
+  if (!sol || !sol.length) {
+    showDemoMessage('!', 'Chưa tính được lời giải cho trạng thái này — thử xáo trộn lại rồi chạy demo.');
+    return;
+  }
+  let realMoves = sol.map(sm => unnormalizeMove(faceMove(sm.face, sm.power), norm.basis));
+  if (practice) {
+    // Cắt lời giải tại nước đầu tiên đạt mục tiêu của bước luyện hiện tại.
+    const sim = st.map(s => ({ p: s.p.slice(), n: s.n.slice(), c: s.c }));
+    let cut = realMoves.length;
+    for (let i = 0; i < realMoves.length; i++) {
+      applyMoveStickers(sim, realMoves[i]);
+      if (goalFor(mode, sim)) { cut = i + 1; break; }
+    }
+    realMoves = realMoves.slice(0, cut);
+  }
+  if (!realMoves.length) {
+    showDemoMessage('✓', 'Khối đã giải xong rồi — không cần chạy demo nữa.');
+    return;
+  }
+  // Chốt ký hiệu + mô tả theo khung vị trí TẠI THỜI ĐIỂM NÀY (trước nước đầu tiên).
+  ensureFrame();
+  const invAtStart = {};
+  for (const s of SPATIALS) invAtStart[frameMap[s]] = s;
+  const moves = realMoves.map(mv => {
+    const notation = spatialNotationOf(mv);
+    const fm = moveToFaceMove(mv);
+    let desc;
+    if (fm) {
+      const sp = invAtStart[fm.face];
+      const dir = fm.power === 1 ? 'theo chiều kim đồng hồ' : fm.power === 2 ? '180°' : 'ngược chiều kim đồng hồ';
+      desc = 'Xoay mặt ' + FACE_SHORT[sp] + ' (tâm màu ' + COLOR_VI[fm.face] + ') ' + dir + '.';
+    } else {
+      desc = 'Xoay lớp giữa ' + notation + '.';
+    }
+    return { mv, notation, desc };
+  });
+  hideBanner();
+  lastHint = null; document.getElementById('hintOut').classList.remove('show');
+  demo = { moves, idx: 0, total: moves.length, state: 'playing', phase: 'gap', speed: demoSpeedPref, practice, cur: null, raf: null, timer: null };
+  setDemoLocks(true);
+  document.getElementById('demoNote').textContent = practice
+    ? 'Demo sẽ tự quay ' + moves.length + ' nước cho tới khi đạt mục tiêu của bước luyện này. Vuốt trên khối hoặc bấm nút nước đi là demo dừng ngay.'
+    : 'Demo sẽ tự quay toàn bộ ' + moves.length + ' nước của lời giải. Vuốt trên khối hoặc bấm nút nước đi là demo dừng ngay.';
+  renderDemoProgress();
+  buzz(12);
+  demo.timer = setTimeout(() => {
+    if (demo && demo.state === 'playing' && demo.phase === 'gap') demoRunCurrent();
+  }, 400);
+}
+window.__demoInfo = function () {
+  return demo ? { state: demo.state, phase: demo.phase, idx: demo.idx, total: demo.total, speed: demo.speed, practice: demo.practice } : null;
+};
+document.getElementById('btnDemoPause').addEventListener('click', () => {
+  if (!demo) return;
+  if (demo.state === 'playing') pauseDemo();
+  else if (demo.state === 'paused') resumeDemo();
+});
+document.getElementById('btnDemoStop').addEventListener('click', () => stopDemo(false));
+document.querySelectorAll('.demo-speed-btn').forEach(b => b.addEventListener('click', () => {
+  demoSpeedPref = b.dataset.speed;
+  if (demo) demo.speed = demoSpeedPref; // áp dụng từ nước tiếp theo (nước đang quay giữ nhịp cũ)
+  renderDemoSpeed();
+}));
+
 // ---------- controls wiring ----------
 document.getElementById('btnCopyLog').addEventListener('click', () => {
   const note = document.getElementById('copyNote');
@@ -1764,6 +2098,7 @@ document.getElementById('btnCopyLog').addEventListener('click', () => {
   }
 });
 document.getElementById('btnHint').addEventListener('click', computeHint);
+document.getElementById('btnDemo').addEventListener('click', startDemo);
 document.getElementById('btnHintAgain').addEventListener('click', computeHint);
 document.getElementById('btnDoHint').addEventListener('click', () => {
   if (lastHint && lastHint.moves.length) { const mv = lastHint.moves[0]; lastHint = null; document.getElementById('hintOut').classList.remove('show'); userMove(mv, 160); }
@@ -1896,9 +2231,10 @@ afterMoveCommitted = function () {
     const alg = document.createElement('span');
     alg.innerHTML = algHtml(fc.alg);
     const btn = document.createElement('button');
-    btn.className = 'btn small';
+    btn.className = 'btn small formula-apply';
     btn.textContent = '▶ Áp dụng thử';
     btn.addEventListener('click', () => {
+      if (isDemoActive()) interruptDemo();
       hideBanner();
       for (const mv of parseAlgSpatial(fc.alg)) enqueueMove(mv, { dur: 210 });
       lastHint = null; document.getElementById('hintOut').classList.remove('show');
