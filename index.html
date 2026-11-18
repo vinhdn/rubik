@@ -248,7 +248,7 @@
             <summary>❓ Cách chơi &amp; ký hiệu</summary>
             <ul>
               <li><b>Vuốt ở bất kỳ đâu trên khối</b> — kể cả phần viền đen giữa các ô màu — theo chiều ngang/dọc để xoay lớp đó, giống hệt vuốt trên ô màu. <b>Kéo ở vùng trống ngoài khối</b> để xoay góc nhìn. Chạm nhầm thì đã có hàng nút bấm từng mặt ở dưới khối.</li>
-              <li><b>Highlight lớp đang giữ:</b> khi bắt đầu vuốt, tầng/cột sắp quay sẽ sáng viền vàng (phần còn lại tối đi) kèm nhãn ký hiệu ở góc khối. <b>Lớp đi theo đúng ngón tay:</b> kéo tới đâu lớp dừng ở đó, xoay dở dang như cầm khối thật; nhấc tay khi đã kéo quá nửa vòng (45°) thì lớp tự quay nốt thành một nước, kéo chưa tới nửa thì lớp bật trở lại vị trí cũ và không tính là một nước.</li>
+              <li><b>Highlight lớp đang giữ:</b> khi bắt đầu vuốt, tầng/cột sắp quay sẽ sáng viền vàng (phần còn lại tối đi) kèm nhãn ký hiệu ở góc khối. <b>Lớp đi theo đúng ngón tay:</b> kéo tới đâu lớp dừng ở đó, xoay dở dang như cầm khối thật; nhấc tay khi đã kéo quá 22,5° (1/4 vòng 90°) thì lớp tự quay nốt thành một nước — hoặc chỉ cần vuốt nhanh dứt khoát theo hướng kéo là lớp cũng quay nốt dù mới kéo ít. Kéo chưa tới 22,5° mà thả chậm thì lớp bật trở lại vị trí cũ và không tính là một nước.</li>
               <li><b>Rung haptic:</b> điện thoại rung nhẹ mỗi khi một lớp quay, rung rõ hơn khi hoàn thành mục tiêu (nếu thiết bị và trình duyệt hỗ trợ rung).</li>
               <li><b>Các nước vừa đi:</b> mọi nước bạn quay đều được ghi lại theo ký hiệu (U, U′, U2, R…) ở panel “Các nước vừa đi” dưới khối, nước mới nhất được tô đậm; bấm “Sao chép dãy nước đi” để lấy cả dãy. Bấm Quay lại (undo) sẽ xoá nước cuối khỏi danh sách.</li>
               <li><b>Toàn màn hình:</b> bấm nút ⛶ (góc phải trên khối, hoặc nút “Toàn màn hình” dưới khối) để chỉ còn khối Rubik chiếm cả màn hình; bấm ✕ hoặc phím Esc để thoát.</li>
@@ -1293,8 +1293,34 @@ function hitTest(pt) {
   return (best && bestD <= stickerPx * 1.2) ? best : null;
 }
 let lastPointerDownAt = 0;
+// Commit on release once the layer has been dragged past 25% of a quarter
+// turn (22.5° of 90°) — a quarter of the way is enough, no need to drag to
+// the old halfway point (45°).
+const COMMIT_ANGLE = Math.PI / 8; // 22.5°
+// Fling: a short but fast flick in the drag direction also commits, even
+// below COMMIT_ANGLE. Velocity is the angular speed (rad/ms) over the last
+// ~120 ms before release; it must point the same way as the drag offset and
+// the layer must already be displaced a little, so a light tap or a slow
+// short drag still springs back.
+const FLING_MIN_ANGLE = 0.15;     // ~8.6° minimum displacement for a fling
+const FLING_VEL = 0.0022;         // rad/ms (~126°/s) — a deliberate flick, not a slow drag
+const FLING_WINDOW_MS = 120;
+function dragVelocity(d, now) {
+  const s = d.samples;
+  if (!s || s.length < 2) return 0;
+  let i = s.length - 1;
+  while (i > 0 && now - s[i - 1].t <= FLING_WINDOW_MS) i--;
+  const first = s[i], last = s[s.length - 1];
+  const dt = last.t - first.t;
+  if (dt < 15) return 0;
+  return (last.theta - first.theta) / dt;
+}
+function isFlingCommit(theta, vel) {
+  return Math.abs(theta) >= FLING_MIN_ANGLE && Math.abs(vel) >= FLING_VEL &&
+    theta !== 0 && Math.sign(vel) === Math.sign(theta);
+}
 function beginDrag(pt, src) {
-  drag = { start: pt, last: pt, hit: hitTest(pt), src, lock: null, theta: 0, overHalf: false };
+  drag = { start: pt, last: pt, hit: hitTest(pt), src, lock: null, theta: 0, overCommit: false, samples: [] };
 }
 cv.addEventListener('pointerdown', e => {
   lastPointerDownAt = Date.now();
@@ -1327,13 +1353,14 @@ function setHold(mv) {
   }
   render();
 }
-function updateHoldTag(mv, theta) {
+function updateHoldTag(mv, theta, vel) {
   const tag = document.getElementById('holdTag');
   if (!tag.classList.contains('show')) return;
   const deg = Math.round(Math.abs(theta) * 180 / Math.PI);
   const eff = { axis: mv.axis, layer: mv.layer, q: mv.q * (theta < 0 ? -1 : 1) };
+  const willCommit = Math.abs(theta) >= COMMIT_ANGLE || isFlingCommit(theta, vel || 0);
   tag.innerHTML = holdLabel(eff) + ' — ' + deg + '° · ' +
-    (Math.abs(theta) >= Math.PI / 4 ? 'thả tay: quay nốt ✓' : 'kéo quá 45° mới quay · thả sớm sẽ bật lại');
+    (willCommit ? 'thả tay: quay nốt ✓' : 'kéo quá 22,5° hoặc vuốt nhanh là quay · thả chậm sẽ bật lại');
 }
 function dragMoveTo(pt) {
   if (!drag) return;
@@ -1370,10 +1397,14 @@ function dragMoveTo(pt) {
   let theta = proj / L.vel; // signed radians travelled in the locked direction
   theta = Math.max(-Math.PI / 2 * 1.08, Math.min(Math.PI / 2 * 1.08, theta));
   drag.theta = theta;
+  const now = performance.now();
+  drag.samples.push({ t: now, theta });
+  while (drag.samples.length > 2 && now - drag.samples[0].t > 250) drag.samples.shift();
+  const vel = dragVelocity(drag, now);
   dragRot = { axis: L.mv.axis, layer: L.mv.layer, angle: L.mv.q * theta };
-  const over = Math.abs(theta) >= Math.PI / 4;
-  if (over !== drag.overHalf) { drag.overHalf = over; if (over) buzz(10); }
-  updateHoldTag(L.mv, theta);
+  const over = Math.abs(theta) >= COMMIT_ANGLE || isFlingCommit(theta, vel);
+  if (over !== drag.overCommit) { drag.overCommit = over; if (over) buzz(10); }
+  updateHoldTag(L.mv, theta, vel);
   render();
 }
 function finishDrag(commitAllowed) {
@@ -1386,8 +1417,10 @@ function finishDrag(commitAllowed) {
   const theta = d.theta;
   const mv = { axis: L.mv.axis, layer: L.mv.layer, q: L.mv.q * (theta < 0 ? -1 : 1) };
   const fromAngle = L.mv.q * theta;
-  if (commitAllowed && Math.abs(theta) >= Math.PI / 4) {
-    // Past half a quarter turn: run the rest of the way and record the move.
+  const vel = dragVelocity(d, performance.now());
+  if (commitAllowed && (Math.abs(theta) >= COMMIT_ANGLE || isFlingCommit(theta, vel))) {
+    // Past 25% of a quarter turn (22.5°), or a fast flick (fling) in the
+    // drag direction: run the rest of the way and record the move.
     if (!anim && !queue.length) {
       hideBanner();
       buzz(16);
@@ -1401,7 +1434,7 @@ function finishDrag(commitAllowed) {
       userMove(mv, 130); // a previous animation is still running: queue it normally
     }
   } else if (Math.abs(fromAngle) > 0.01 && !anim) {
-    // Under half: spring back to the original position — no move is recorded.
+    // Below the commit angle and no fling: spring back — no move is recorded.
     buzz(6);
     anim = { mv: { axis: L.mv.axis, layer: L.mv.layer, q: mv.q }, t0: performance.now(), dur: 150, from: fromAngle, to: 0, noCommit: true };
     requestAnimationFrame(tick);
