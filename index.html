@@ -254,6 +254,7 @@
               <li><b>Toàn màn hình:</b> bấm nút ⛶ (góc phải trên khối, hoặc nút “Toàn màn hình” dưới khối) để chỉ còn khối Rubik chiếm cả màn hình; bấm ✕ hoặc phím Esc để thoát.</li>
               <li><b>Ký hiệu:</b> U = mặt trên (vàng), D = mặt dưới (trắng), R = phải, L = trái, F = trước (xanh lá), B = sau (xanh dương). Chữ không dấu = xoay 90° theo chiều kim đồng hồ nhìn vào mặt đó; thêm dấu ′ = ngược chiều; thêm số 2 = xoay 180°.</li>
               <li><b>Quay lại / Làm lại:</b> hoàn tác từng nước đã đi, kể cả nước vuốt tay.</li>
+              <li><b>Tự động lưu ván:</b> trạng thái khối, các nước đã đi, thời gian và góc nhìn được tự lưu sau mỗi thay đổi — lỡ bấm Back hay đóng trang, mở lại là thấy dòng “Đã khôi phục ván trước” và chơi tiếp đúng ván dở. Bấm xáo trộn / ván mới thì ván đã lưu được thay bằng ván mới.</li>
               <li><b>Gợi ý:</b> máy tính phân tích trạng thái hiện tại và chỉ nước đi cụ thể tiếp theo trên đường giải ngắn — bấm “Đi luôn nước này” nếu muốn máy đi hộ, hoặc tự đi theo rồi bấm Gợi ý tiếp.</li>
               <li><b>Phím tắt (máy tính):</b> U R F D L B để xoay, giữ Shift để xoay ngược, Ctrl+Z hoàn tác.</li>
               <li><b>Cài app:</b> bấm nút “📲 Cài app” ở dưới khối để cài trang này như một ứng dụng (mở từ màn hình chính, chơi offline). Nếu nút chưa hiện lời mời cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” / “Thêm vào màn hình chính”.</li>
@@ -1025,11 +1026,9 @@ function render() {
     const inAnim = anim && pos0[anim.mv.axis] === anim.mv.layer;
     for (const s of grp) {
       let n = s.n;
-      if (inAnim) { n = rot3(n, anim.mv.axis, animQ); }
-      const nv = viewRot(n);
-      if (nv[2] < 0.12) continue;
       // cubie center in cube space (animated)
-      let cr = inAnim ? rot3(pos0, anim.mv.axis, animQ) : pos0;
+      let cr = pos0;
+      if (inAnim) { n = rot3(n, anim.mv.axis, animQ); cr = rot3(pos0, anim.mv.axis, animQ); }
       const others = [0, 1, 2].filter(a => Math.abs(s.n[a]) < 0.5);
       const t1 = [0, 0, 0], t2 = [0, 0, 0];
       t1[others[0]] = 1; t2[others[1]] = 1;
@@ -1045,6 +1044,18 @@ function render() {
         t1r = rot3(t1r, dragRot.axis, dragRot.angle);
         t2r = rot3(t2r, dragRot.axis, dragRot.angle);
       }
+      // Visibility is decided ONLY NOW, from the sticker's TRUE current
+      // geometry — normal after the snap animation AND after the live
+      // finger-follow drag rotation, then the camera view. (This cull used
+      // to run before the drag rotation was applied, so while holding a
+      // layer past ~70° the back-face stickers swinging toward the camera
+      // were still culled by their pre-drag normals and the cube looked
+      // like it was missing a face until the finger was released.) Fully
+      // back-facing stickers are still skipped, and the painter sort below
+      // uses the depth of this same rotated geometry, so a mid-drag frame
+      // is drawn exactly like a static frame of the same position.
+      const nv = viewRot(n);
+      if (nv[2] < 0.12) continue;
       const polyOf = (half, off) => [[-1,-1],[1,-1],[1,1],[-1,1]].map(([a, b]) => {
         const q = [cr[0] + (t1r[0] * a + t2r[0] * b) * half + n[0] * off,
                    cr[1] + (t1r[1] * a + t2r[1] * b) * half + n[1] * off,
@@ -1130,6 +1141,7 @@ function afterMoveCommitted() {
   if (roundActive && !timerStart) startTimer();
   updateStats();
   checkGoal();
+  saveState();
 }
 // ---------- haptics + move log ----------
 function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch (e) { /* unsupported */ } }
@@ -1175,6 +1187,90 @@ function updateStageLine() {
   const bars = document.querySelectorAll('#stageProg i');
   bars.forEach((b, i) => b.classList.toggle('on', i < stage));
 }
+
+// ---------- auto-save / restore (localStorage) ----------
+// The whole in-progress game is saved after every change — each committed
+// move, undo/redo, scramble/new round, mode switch and camera move — so an
+// accidental Back tap or a closed tab no longer loses the game. Everything
+// is wrapped in try/catch: where localStorage is unavailable (private mode,
+// blocked storage in some webviews) the game simply runs in-memory as
+// before. The key carries a version so a future format change can migrate
+// or ignore old saves instead of breaking on them.
+const SAVE_KEY = 'rubik-state-v1';
+function saveState() {
+  try {
+    if (!window.localStorage) return;
+    // Save the LOGICAL state (in-flight animation + queued moves applied):
+    // history/moveLog already contain those moves, so the restored cube
+    // must contain them too, or undo would corrupt the restored game.
+    let extra = 0;
+    if (anim && !anim.noCommit) extra += pendingUndoAdjust ? -1 : 1;
+    extra += queue.length;
+    const data = {
+      v: 1,
+      stickers: logicalStickers(),
+      history: history,
+      redoStack: redoStack,
+      moveLog: moveLog,
+      moveCount: moveCount + extra,
+      mode: mode,
+      roundActive: roundActive,
+      roundDone: roundDone,
+      timerElapsed: elapsedMs(),
+      timerRunning: !!timerStart && roundActive && !roundDone,
+      view: { yaw: view.yaw, pitch: view.pitch, scale: view.scale }
+    };
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch (e) { /* storage unavailable — keep playing in-memory */ }
+}
+function restoreSavedState() {
+  let data = null;
+  try {
+    if (!window.localStorage) return false;
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return false;
+    data = JSON.parse(raw);
+  } catch (e) { return false; }
+  try {
+    if (!data || data.v !== 1) return false;
+    if (!Array.isArray(data.stickers) || data.stickers.length !== 54) return false;
+    for (const s of data.stickers) {
+      if (!s || !Array.isArray(s.p) || s.p.length !== 3 || !Array.isArray(s.n) || s.n.length !== 3 || typeof s.c !== 'string') return false;
+    }
+    if (!MODES[data.mode]) return false;
+    if (!Array.isArray(data.history) || !Array.isArray(data.moveLog)) return false;
+    mode = data.mode;
+    stickers = data.stickers;
+    history = data.history;
+    redoStack = Array.isArray(data.redoStack) ? data.redoStack : [];
+    moveLog = data.moveLog;
+    moveCount = Number.isFinite(data.moveCount) ? data.moveCount : moveLog.length;
+    roundActive = !!data.roundActive;
+    roundDone = !!data.roundDone;
+    queue = []; anim = null; dragRot = null; holdHL = null;
+    timerElapsed = Number.isFinite(data.timerElapsed) ? data.timerElapsed : 0;
+    timerStart = null;
+    if (data.view && Number.isFinite(data.view.yaw) && Number.isFinite(data.view.pitch) && Number.isFinite(data.view.scale)) {
+      view = { yaw: data.view.yaw, pitch: data.view.pitch, scale: data.view.scale };
+    }
+    document.querySelectorAll('#modeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.mode === mode));
+    document.getElementById('modeName').textContent = MODES[mode].name;
+    updateModeDesc();
+    renderLog();
+    render();
+    updateStats();
+    if (roundActive && !roundDone && data.timerRunning) startTimer();
+    showBanner('<span class="big">↩ Đã khôi phục ván trước</span>Khối, các nước đã đi, thời gian và góc nhìn được lưu tự động sau mỗi thay đổi — ván dở của bạn vẫn nguyên như lúc rời trang, cứ chơi tiếp.',
+      false,
+      '<br><button class="btn primary small" onclick="restartRound()">Ván mới</button>' +
+      '<button class="btn small" onclick="hideBanner()">Chơi tiếp ván này</button>');
+    return true;
+  } catch (e) { return false; }
+}
+// Leaving the page (Back button, closing the tab) must not lose the timer
+// or a just-finished drag: save once more on the way out.
+window.addEventListener('pagehide', saveState);
+document.addEventListener('visibilitychange', () => { if (document.hidden) saveState(); });
 
 // ---------- goal / banner ----------
 function showBanner(html, good, buttons) {
@@ -1243,6 +1339,7 @@ function startRound(m) {
   roundActive = true;
   updateModeDesc();
   updateStats();
+  saveState(); // a new round / reshuffle overwrites the previously saved game
 }
 function updateModeDesc() {
   const el = document.getElementById('modeDesc');
@@ -1274,23 +1371,19 @@ function canvasPoint(e) {
 }
 function hitTest(pt) {
   if (!drawnFaces.length) render();
+  // STRICT silhouette test: a point grabs a layer ONLY when it lies inside
+  // the cube's outer silhouette — the union of the visible cubie body quads.
+  // Those quads tile the whole silhouette, black plastic gaps between the
+  // colored stickers included, so swipes starting in an inner gap still
+  // turn a layer exactly like swipes on a sticker. A point OUTSIDE the
+  // silhouette — even 1px past the edge — returns null here and the drag
+  // orbits the whole cube instead. There is deliberately NO nearest-layer
+  // fallback for outside points: that fallback is what used to steal
+  // near-edge view drags and turn them into accidental layer moves.
   for (let i = drawnFaces.length - 1; i >= 0; i--) {
     if (ptInPoly(pt, drawnFaces[i].pts)) return drawnFaces[i];
   }
-  // Fallback: a touch that starts anywhere on the cube's silhouette (a hair
-  // into a gap between stickers, a rounding miss…) must still grab a layer —
-  // never fall through to view rotation. Take the nearest drawn sticker when
-  // it is within about one sticker of the touch point; genuinely empty space
-  // around the cube stays a view drag.
-  let best = null, bestD = Infinity;
-  for (const f of drawnFaces) {
-    const cx = (f.pts[0][0] + f.pts[1][0] + f.pts[2][0] + f.pts[3][0]) / 4;
-    const cy = (f.pts[0][1] + f.pts[1][1] + f.pts[2][1] + f.pts[3][1]) / 4;
-    const d = Math.hypot(pt[0] - cx, pt[1] - cy);
-    if (d < bestD) { bestD = d; best = f; }
-  }
-  const stickerPx = Math.min(W, H) * 0.183 * view.scale;
-  return (best && bestD <= stickerPx * 1.2) ? best : null;
+  return null;
 }
 let lastPointerDownAt = 0;
 // Commit on release once the layer has been dragged past 25% of a quarter
@@ -1413,7 +1506,7 @@ function finishDrag(commitAllowed) {
   const L = d.lock;
   dragRot = null;
   if (holdHL) setHold(null);
-  if (!L) { render(); return; }
+  if (!L) { render(); saveState(); return; } // a pure view-orbit drag ends here: persist the new camera angle
   const theta = d.theta;
   const mv = { axis: L.mv.axis, layer: L.mv.layer, q: L.mv.q * (theta < 0 ? -1 : 1) };
   const fromAngle = L.mv.q * theta;
@@ -1582,12 +1675,13 @@ document.getElementById('btnReset').addEventListener('click', () => {
   hideBanner(); roundActive = false; mode = mode; setStickers(solvedStickers());
   document.getElementById('modeName').textContent = MODES[mode].name + ' — đã giải';
   updateStats();
+  saveState();
 });
 document.getElementById('btnStartMode').addEventListener('click', () => startRound(mode));
 document.getElementById('btnShuffleMode').addEventListener('click', () => startRound(mode));
-document.getElementById('zoomIn').addEventListener('click', () => { view.scale = Math.min(1.5, view.scale * 1.15); render(); });
-document.getElementById('zoomOut').addEventListener('click', () => { view.scale = Math.max(0.6, view.scale / 1.15); render(); });
-document.getElementById('viewReset').addEventListener('click', () => { view = { ...DEFAULT_VIEW }; render(); });
+document.getElementById('zoomIn').addEventListener('click', () => { view.scale = Math.min(1.5, view.scale * 1.15); render(); saveState(); });
+document.getElementById('zoomOut').addEventListener('click', () => { view.scale = Math.max(0.6, view.scale / 1.15); render(); saveState(); });
+document.getElementById('viewReset').addEventListener('click', () => { view = { ...DEFAULT_VIEW }; render(); saveState(); });
 
 // ---------- fullscreen: cube only ----------
 const boardEl = document.getElementById('board');
@@ -1634,6 +1728,7 @@ afterMoveCommitted = function () {
     if (roundActive && !timerStart) startTimer();
     updateStats();
     checkGoal();
+    saveState();
     return;
   }
   _after();
@@ -1700,9 +1795,11 @@ document.addEventListener('keydown', e => {
   }
 });
 
-// init
+// init: restore the auto-saved in-progress game if there is one (e.g. the
+// user hit Back or closed the tab mid-game); only start a fresh scramble
+// when there is nothing valid to restore.
 fitCanvas();
-startRound('free');
+if (!restoreSavedState()) startRound('free');
 
 </script>
 <script>
