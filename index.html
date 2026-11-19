@@ -283,7 +283,12 @@
           </div>
 
           <div class="panel">
-            <h3>📋 Thẻ công thức — phương pháp cơ bản</h3>
+            <h3>📋 Thẻ công thức tầng 3 — phương pháp mới (Sune)</h3>
+            <div id="formulaCardsNew"></div>
+          </div>
+
+          <div class="panel">
+            <h3>📋 Thẻ công thức tầng 3 — phương pháp cũ</h3>
             <div id="formulaCards"></div>
           </div>
 
@@ -886,6 +891,62 @@ function genFlip(rng) {
   pat.forEach((t, i) => { if (t) twistCornerAt(st, pos[i], t === 1 ? 1 : -1); });
   return st;
 }
+// ===== Phương pháp tầng 3 MỚI (Sune / AA / UA) =====
+// AA và UA là tráo vòng 3 viên THUẦN (giữ nguyên hướng 100%): AA chỉ tráo
+// 3 góc tầng trên (giữ góc trước–trái), UA chỉ tráo 3 cạnh tầng trên (giữ
+// cạnh phía sau). Generator của 2 chế độ AA/UA áp chính các công thức này
+// (và bản ngược AB/UB) lên khối đã giải nên trạng thái tạo ra luôn đúng
+// bản chất của bước: AA — góc ngửa sẵn + cạnh xong, chỉ sai vị trí góc;
+// UA — góc xong hết, chỉ sai vị trí cạnh.
+const AA_ALG = "R' F R' B2 R F' R' B2 R2";
+const UA_ALG = "R U' R U R U R U' R' U' R2";
+function applyAlgTo(st, algStr) { for (const mv of parseAlg(algStr)) applyMoveStickers(st, mv); }
+function applyMovesTo(st, mvs) { for (const mv of mvs) applyMoveStickers(st, mv); }
+function invertAlgMoves(algStr) { return parseAlg(algStr).slice().reverse().map(invertMove); }
+function genSune(rng) {
+  // Chỉ xoắn hướng 4 góc tầng trên: mọi viên ở nguyên vị trí, cạnh giữ
+  // nguyên hướng. Chọn 1 trong 7 mẫu xoắn hợp lệ (tổng xoắn ≡ 0 mod 3)
+  // ở một góc xoay ngẫu nhiên.
+  const st = solvedStickers();
+  const pos = withY(Y_CORNER_ORDER, 1);
+  const bases = [[1, 2, 0, 0], [2, 1, 0, 0], [1, 0, 2, 0], [1, 1, 1, 0], [2, 2, 2, 0], [1, 1, 2, 2], [1, 2, 1, 2]];
+  const base = bases[(rng() * bases.length) | 0];
+  const rot = (rng() * 4) | 0;
+  const pat = base.map((_, i) => base[((i - rot) % 4 + 4) % 4]);
+  pat.forEach((t, i) => { if (t) twistCornerAt(st, pos[i], t === 1 ? 1 : -1); });
+  return st;
+}
+function genAA(rng) {
+  const st = solvedStickers();
+  const aa = parseAlg(AA_ALG), ab = invertAlgMoves(AA_ALG);
+  const times = 1 + ((rng() * 2) | 0); // 1–2 vòng AA/AB
+  let uTotal = 0; // tổng số U đã xoay: phải bù về ≡ 0 (mod 4) ở cuối, nếu
+  // không cả tầng trên (gồm cạnh) sẽ lệch tâm — bài này chỉ xáo VỊ TRÍ GÓC.
+  for (let i = 0; i < times; i++) {
+    const u = (rng() * 4) | 0; uTotal += u;
+    for (let j = 0; j < u; j++) applyMoveStickers(st, faceMove('U', 1));
+    applyMovesTo(st, rng() < 0.5 ? aa : ab);
+  }
+  const back = (4 - (uTotal % 4)) % 4;
+  for (let j = 0; j < back; j++) applyMoveStickers(st, faceMove('U', 1));
+  if (checkCornersInPlace(flOf(st))) applyMovesTo(st, aa); // 2 vòng tự triệt tiêu: xáo thêm 1 vòng AA
+  return st;
+}
+function genUA(rng) {
+  const st = solvedStickers();
+  const ua = parseAlg(UA_ALG), ub = invertAlgMoves(UA_ALG);
+  const times = 1 + ((rng() * 2) | 0); // 1–2 vòng UA/UB
+  let uTotal = 0; // bù U về ≡ 0 (mod 4) như genAA — bài này chỉ xáo cạnh, góc phải ở nguyên vị trí
+  for (let i = 0; i < times; i++) {
+    const u = (rng() * 4) | 0; uTotal += u;
+    for (let j = 0; j < u; j++) applyMoveStickers(st, faceMove('U', 1));
+    applyMovesTo(st, rng() < 0.5 ? ua : ub);
+  }
+  const back = (4 - (uTotal % 4)) % 4;
+  for (let j = 0; j < back; j++) applyMoveStickers(st, faceMove('U', 1));
+  if (checkSolvedNorm(flOf(st))) applyMovesTo(st, ua); // 2 vòng tự triệt tiêu: xáo thêm 1 vòng UA
+  return st;
+}
 function genFreeScramble(rng) {
   const faces = ['U', 'R', 'F', 'D', 'L', 'B'];
   const toks = [];
@@ -934,6 +995,9 @@ function cornerFaceletTop(ci, fl) {
   return idxs.map(i => fl[i]).sort().join('');
 }
 function checkSolvedNorm(fl) { return fl.every((c, i) => c === SOLVED_FL[i]); }
+function checkCornersOriented(fl) { // cả 4 góc tầng trên có ô vàng ngửa lên mặt trên (chưa xét vị trí)
+  return fl[0] === 'U' && fl[2] === 'U' && fl[6] === 'U' && fl[8] === 'U';
+}
 function goalFor(mode, st) {
   const fl = flOf(st);
   switch (mode) {
@@ -942,6 +1006,9 @@ function goalFor(mode, st) {
     case 'edges': return checkEdgesAligned(fl) && checkF2L(fl);
     case 'corners': return checkCornersInPlace(fl) && checkEdgesAligned(fl) && checkF2L(fl);
     case 'flip': return checkSolvedNorm(fl);
+    case 'sune': return checkCornersOriented(fl); // phương pháp mới bước 2: CHỈ cần hướng góc, vị trí để bước AA lo
+    case 'aa': return checkCornersInPlace(fl) && checkCornersOriented(fl) && checkEdgesAligned(fl) && checkF2L(fl);
+    case 'ua': return checkSolvedNorm(fl);
     case 'free': return isSolvedUniform(st);
     default: return false;
   }
@@ -960,7 +1027,8 @@ function detectStage(fl) {
 
 if (typeof module !== 'undefined') Object.assign(module.exports, {
   mulberry32, genLayer2, genCross, genEdges, genCorners, genFlip, genFreeScramble,
-  goalFor, detectStage, flOf, checkBottom, checkF2L, checkYellowCross, checkEdgesAligned, checkCornersInPlace, checkSolvedNorm
+  genSune, genAA, genUA, AA_ALG, UA_ALG,
+  goalFor, detectStage, flOf, checkBottom, checkF2L, checkYellowCross, checkEdgesAligned, checkCornersInPlace, checkSolvedNorm, checkCornersOriented
 });
 
 </script>
@@ -1080,7 +1148,10 @@ const MODES = {
   cross:   { name: 'Tầng 3 · Bước 1: Dấu cộng vàng', desc: '2 tầng dưới đã xong. Mặt vàng đang ở dạng chấm / chữ L / vạch ngang — dùng F R U R′ U′ F′ (1–3 lần) để tạo dấu cộng vàng. Cách cầm: chữ L để ở góc trên–trái, vạch ngang để nằm ngang.' },
   edges:   { name: 'Tầng 3 · Bước 2: Đưa 4 cạnh đúng tâm', desc: 'Dấu cộng vàng đã có, chỉ còn các cạnh chưa khớp màu tâm. Công thức: R U R′ U R U2 R′ U. Cách cầm: 2 cạnh đúng kề nhau để ở SAU + PHẢI; nếu 2 cạnh đúng đối diện nhau, cứ làm công thức 1 lần ở vị trí bất kỳ rồi cầm lại.' },
   corners: { name: 'Tầng 3 · Bước 3: Đưa 4 góc đúng vị trí', desc: '4 cạnh đã đúng tâm, chỉ còn các góc chưa về đúng khe (đúng bộ 3 màu là được, chưa cần vàng ngửa lên). Công thức: U R U′ L′ U R′ U′ L. Cách cầm: góc đã đúng để ở TRƯỚC–PHẢI–TRÊN; chưa có góc nào đúng thì làm 1 lần ở vị trí bất kỳ.' },
-  flip:    { name: 'Tầng 3 · Bước 4: Lật góc', desc: 'Mọi viên đã đúng vị trí, chỉ còn góc bị nghiêng. Giữ góc sai ở trước–phải–trên, lặp R′ D′ R D (2 hoặc 4 vòng) đến khi vàng ngửa lên, rồi CHỈ xoay U sang góc sai tiếp theo — đừng xoay cả khối, tầng dưới rối tạm là bình thường.' }
+  flip:    { name: 'Tầng 3 · Bước 4: Lật góc', desc: 'Mọi viên đã đúng vị trí, chỉ còn góc bị nghiêng. Giữ góc sai ở trước–phải–trên, lặp R′ D′ R D (2 hoặc 4 vòng) đến khi vàng ngửa lên, rồi CHỈ xoay U sang góc sai tiếp theo — đừng xoay cả khối, tầng dưới rối tạm là bình thường.' },
+  sune:    { name: 'Tầng 3 mới · Sune: lật hướng góc', desc: 'Phương pháp MỚI — bước 2: mọi viên đang ở nguyên vị trí, cạnh giữ nguyên, chỉ có hướng của 4 góc tầng trên bị xoắn. Dùng Sune để lật cả 4 góc cho vàng ngửa lên trên. Mục tiêu của bài này CHỈ là hướng góc — vị trí góc chưa cần đúng, để bước AA lo. Cả phương pháp mới không có nước D nào.' },
+  aa:      { name: 'Tầng 3 mới · AA: góc về vị trí', desc: 'Phương pháp MỚI — bước 3: 4 góc đã ngửa vàng, các cạnh đã xong, chỉ còn vị trí các góc bị tráo vòng. Công thức AA giữ nguyên góc trước–trái và tráo vòng 3 góc còn lại — không đụng cạnh, không xoắn góc nào.' },
+  ua:      { name: 'Tầng 3 mới · UA: cạnh về tâm', desc: 'Phương pháp MỚI — bước 4: 4 góc đã xong hết, chỉ còn 3 cạnh tầng trên tráo vòng nhau. Công thức UA giữ nguyên cạnh phía sau và tráo vòng 3 cạnh còn lại — không đụng góc. Mục tiêu: giải xong cả khối.' }
 };
 const FORMULAS = [
   { t: 'Tầng 2 — Chèn cạnh sang PHẢI', alg: "U R U' R' U' F' U F", d: 'Cạnh cần chèn đang ở tầng trên, màu mặt trước khớp tâm mặt trước. Đưa cạnh lên trên–phải rồi chèn xuống khe phải.' },
@@ -1089,6 +1160,14 @@ const FORMULAS = [
   { t: 'Bước 2 — Đưa 4 cạnh đúng tâm', alg: "R U R' U R U2 R' U", d: 'Có U ở cuối! 2 cạnh đúng kề nhau để ở SAU + PHẢI, công thức chỉ tráo 2 cạnh sai ở trước + trái. Nhớ theo khúc: (R U R′ U) + (R U2 R′) + U.' },
   { t: 'Bước 3 — Đưa 4 góc đúng vị trí', alg: "U R U' L' U R' U' L", d: 'Góc đã đúng để ở TRƯỚC–PHẢI–TRÊN. Công thức là 2 tay làm đối xứng nhau — học theo tay dễ hơn học chữ. Chưa có góc đúng thì làm 1 lần ở vị trí bất kỳ.' },
   { t: 'Bước 4 — Lật góc', alg: "R' D' R D", d: 'Ngắn nhất nhưng hay quên nhất: Xuống – Trái – Lên – Phải. Lặp 2 hoặc 4 vòng cho 1 góc đến khi vàng ngửa lên, xong chỉ xoay U sang góc tiếp theo.' }
+];
+// Thẻ phương pháp tầng 3 MỚI: thứ tự lật hướng TRƯỚC, xếp vị trí SAU — làm
+// được vì AA/UA là tráo vòng thuần, giữ nguyên hướng 100%. Không có nước D.
+const FORMULAS_NEW = [
+  { t: 'Bước 1 — Dấu cộng vàng', d: 'Như phương pháp cũ: chấm → chữ L (để L ở trên–trái) → vạch ngang (để nằm ngang) → dấu cộng, làm 1–3 lần.', algs: [{ alg: "F R U R' U' F'" }] },
+  { t: 'Bước 2 — Lật hướng 4 góc: Sune', d: '1 góc vàng ngửa (hình cá): để góc ngửa ở trước–trái; góc trước–phải có vàng ở mặt trước → Sune. Vàng ở mặt phải → cá gương: Antisune với góc ngửa ở trước–phải. 0 hoặc 2 góc ngửa: xoay U cho góc trước–trái có ô vàng ở mặt trước, làm Sune 1 lần rồi đếm lại.', algs: [{ label: '▶ Sune', alg: "R U R' U R U2 R'" }, { label: '▶ Antisune', alg: "L' U' L U' L' U2 L" }] },
+  { t: 'Bước 3 — Góc về đúng vị trí: AA', d: 'Giữ nguyên góc trước–trái, tráo vòng 3 góc còn lại. Tìm góc đã đúng vị trí, xoay cả khối đưa về trước–trái rồi làm AA (tối đa 2 lần); không có góc đúng thì làm AA 1 lần bừa; AA 2 lần với cùng góc neo mà chưa xong thì xoay U 1 cái rồi làm lại.', algs: [{ alg: "R' F R' B2 R F' R' B2 R2" }] },
+  { t: 'Bước 4 — Cạnh về đúng tâm: UA', d: 'Giữ nguyên cạnh phía sau, tráo vòng 3 cạnh còn lại. Tìm cạnh đã đúng, xoay cả khối đưa ra phía sau rồi làm UA (tối đa 3 lần). Bước này không xoay U.', algs: [{ alg: "R U' R U R U R U' R' U' R2" }] }
 ];
 const STAGE_TEXT = [
   'Bạn đang ở: <b>Tầng 1</b> — làm dấu cộng trắng và 4 góc trắng (mặt trắng ở dưới, vàng ở trên).',
@@ -1456,7 +1535,8 @@ function checkGoal() {
     confetti();
     buzz([45, 60, 45, 60, 90]);
     const again = mode === 'free' ? 'Xáo trộn ván mới' : 'Luyện tiếp bài này';
-    showBanner('<span class="big">🎉 Hoàn thành!</span>Bạn đã đạt mục tiêu của chế độ <b>' + MODES[mode].name + '</b> — ' + moveCount + ' nước, thời gian ' + fmtTime(elapsedMs()) + '.',
+    const goalNote = mode === 'sune' ? ' Mục tiêu của bài này chỉ là <b>hướng góc</b>: cả 4 góc vàng đã ngửa lên trên — vị trí góc sẽ xử lý ở bước AA.' : '';
+    showBanner('<span class="big">🎉 Hoàn thành!</span>Bạn đã đạt mục tiêu của chế độ <b>' + MODES[mode].name + '</b> — ' + moveCount + ' nước, thời gian ' + fmtTime(elapsedMs()) + '.' + goalNote,
       true,
       '<br><button class="btn primary small" onclick="restartRound()">' + again + '</button>' +
       '<button class="btn small" onclick="hideBanner()">Chơi tiếp tự do</button>');
@@ -1488,6 +1568,10 @@ function startRound(m) {
   else if (m === 'cross') st = genCross(rng);
   else if (m === 'edges') st = genEdges(rng);
   else if (m === 'corners') st = genCorners(rng);
+  else if (m === 'flip') st = genFlip(rng);
+  else if (m === 'sune') st = genSune(rng);
+  else if (m === 'aa') st = genAA(rng);
+  else if (m === 'ua') st = genUA(rng);
   else st = genFlip(rng);
   setStickers(st);
   roundActive = true;
@@ -1503,6 +1587,9 @@ function updateModeDesc() {
   if (mode === 'edges') extra = '<div class="formula-line">Công thức: ' + algHtml("R U R' U R U2 R' U") + '</div>';
   if (mode === 'corners') extra = '<div class="formula-line">Công thức: ' + algHtml("U R U' L' U R' U' L") + '</div>';
   if (mode === 'flip') extra = '<div class="formula-line">Công thức: ' + algHtml("R' D' R D") + ' ×2 hoặc ×4 cho mỗi góc</div>';
+  if (mode === 'sune') extra = '<div class="formula-line">Sune: ' + algHtml("R U R' U R U2 R'") + '<br>Antisune (cá gương): ' + algHtml("L' U' L U' L' U2 L") + '</div>';
+  if (mode === 'aa') extra = '<div class="formula-line">Công thức AA: ' + algHtml("R' F R' B2 R F' R' B2 R2") + '</div>';
+  if (mode === 'ua') extra = '<div class="formula-line">Công thức UA: ' + algHtml("R U' R U R U R U' R' U' R2") + '</div>';
   el.innerHTML = MODES[mode].desc + extra;
 }
 function algHtml(str) {
@@ -2244,6 +2331,35 @@ afterMoveCommitted = function () {
     box.appendChild(card);
   }
 })();
+// formula cards — phương pháp mới (Sune): mỗi bước có thể có nhiều công
+// thức áp dụng thử (bước 2 có cả Sune và Antisune)
+(function buildFormulasNew() {
+  const box = document.getElementById('formulaCardsNew');
+  if (!box) return;
+  for (const fc of FORMULAS_NEW) {
+    const card = document.createElement('div');
+    card.className = 'formula-card';
+    card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
+    const row = document.createElement('div');
+    row.className = 'row';
+    for (const a of fc.algs) {
+      const alg = document.createElement('span');
+      alg.innerHTML = algHtml(a.alg);
+      const btn = document.createElement('button');
+      btn.className = 'btn small formula-apply';
+      btn.textContent = a.label || '▶ Áp dụng thử';
+      btn.addEventListener('click', () => {
+        if (isDemoActive()) interruptDemo();
+        hideBanner();
+        for (const mv of parseAlgSpatial(a.alg)) enqueueMove(mv, { dur: 210 });
+        lastHint = null; document.getElementById('hintOut').classList.remove('show');
+      });
+      row.appendChild(alg); row.appendChild(btn);
+    }
+    card.appendChild(row);
+    box.appendChild(card);
+  }
+})();
 // keyboard
 document.addEventListener('keydown', e => {
   if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); document.getElementById('btnUndo').click(); return; }
@@ -2261,12 +2377,11 @@ if (!restoreSavedState()) startRound('free');
 
 </script>
 <script>
-// ================= PWA: install prompt + service worker =================
+// ================= PWA: hướng dẫn cài app + service worker =================
 (function () {
   var panel = document.getElementById('installPanel');
   var btn = document.getElementById('btnInstall');
   var note = document.getElementById('installNote');
-  var deferredPrompt = null;
 
   function isStandalone() {
     try {
@@ -2277,41 +2392,9 @@ if (!restoreSavedState()) startRound('free');
   // Already installed / running as the app: no need to offer installation.
   if (isStandalone() && panel) panel.classList.add('hide');
 
-  window.addEventListener('beforeinstallprompt', function (e) {
-    e.preventDefault();
-    deferredPrompt = e;
-    if (panel) panel.classList.remove('hide');
-    if (note) note.textContent = '';
-  });
-  window.addEventListener('appinstalled', function () {
-    deferredPrompt = null;
-    if (panel) panel.classList.add('hide');
-  });
-
   if (btn) btn.addEventListener('click', function () {
-    if (deferredPrompt) {
-      var p = deferredPrompt;
-      deferredPrompt = null;
-      try {
-        // p is the BeforeInstallPromptEvent: its prompt method is the
-        // browser's own install invitation, not a window dialog.
-        var showInstallInvitation = p.prompt;
-        if (showInstallInvitation) showInstallInvitation.call(p);
-        if (p.userChoice && p.userChoice.then) {
-          p.userChoice.then(function (choice) {
-            if (choice && choice.outcome === 'accepted') {
-              if (panel) panel.classList.add('hide');
-            } else if (note) {
-              note.textContent = 'Bạn đã đóng lời mời cài đặt — bấm lại nút này khi muốn cài, hoặc dùng menu ⋮ của Chrome.';
-            }
-          }).catch(function () { /* ignore */ });
-        }
-      } catch (err) { /* fall through to manual instructions */ }
-      return;
-    }
-    // Chrome did not offer the native prompt (not eligible yet, desktop
-    // without prompt, or a browser without beforeinstallprompt): give the
-    // manual route instead of a dead button.
+    // Cài đặt đi qua menu của trình duyệt (trang không tự bật hộp thoại
+    // cài đặt): hiện hướng dẫn ngay trong trang theo từng nền tảng.
     var isIOS = /iphone|ipad|ipod/i.test(window.navigator.userAgent || '');
     if (note) {
       note.textContent = isIOS
