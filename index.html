@@ -292,6 +292,11 @@
             <div id="formulaCards"></div>
           </div>
 
+          <div class="panel">
+            <h3>📋 Thẻ F2L cơ bản</h3>
+            <div id="formulaCardsF2L"></div>
+          </div>
+
           <details class="help">
             <summary>❓ Cách chơi &amp; ký hiệu</summary>
             <ul>
@@ -947,6 +952,69 @@ function genUA(rng) {
   if (checkSolvedNorm(flOf(st))) applyMovesTo(st, ua); // 2 vòng tự triệt tiêu: xáo thêm 1 vòng UA
   return st;
 }
+// ===== F2L: chèn cặp góc + cạnh (tầng 1 + tầng 2 cùng lúc) =====
+// Các công thức F2L cơ bản viết cho khe trước–phải là hoán vị CHỈ động vào
+// đúng cặp của khe đó trong 2 tầng dưới (đã kiểm chứng bằng mô phỏng: áp
+// dụng lên khối đã giải, ngoài cặp đích chỉ có tầng trên thay đổi — dấu
+// cộng trắng và 3 cặp còn lại nguyên vẹn). Áp dụng công thức NGHỊCH lên
+// khối đã giải sẽ lấy đúng cặp đó lên tầng trên, tạo đúng thế bài của
+// công thức đó. Xoay cả khối quanh trục Y (mặt trắng luôn ở dưới) để đưa
+// khe bất kỳ về trước–phải, áp dụng xong xoay trả lại — tâm không đổi chỗ.
+const F2L_TEACH = ["U R U' R'", "R U R'", "F' U' F", "R U2 R' U' R U R'"];
+const F2L_ALL = F2L_TEACH.concat(["R U' R' U R U' R'"]);
+function rotCubeY(st, q) {
+  q = ((q % 4) + 4) % 4;
+  for (let i = 0; i < q; i++) for (const s of st) { s.p = rotVec(s.p, 1, 1); s.n = rotVec(s.n, 1, 1); }
+}
+function applyAlgAtSlot(st, moves, slot) {
+  rotCubeY(st, -slot);
+  applyMovesTo(st, moves);
+  rotCubeY(st, slot);
+}
+// Cặp theo góc quanh trục Y (0=trước–phải, 1=sau–phải, 2=sau–trái,
+// 3=trước–trái): vị trí góc tầng dưới + cạnh tầng giữa trong hệ cubie.
+const F2L_PAIR_POS = [{ c: 4, e: 8 }, { c: 7, e: 11 }, { c: 6, e: 10 }, { c: 5, e: 9 }];
+function f2lPairSolved(cc, slot) {
+  const p = F2L_PAIR_POS[slot];
+  return cc.cp[p.c] === p.c && cc.co[p.c] === 0 && cc.ep[p.e] === p.e && cc.eo[p.e] === 0;
+}
+function f2lDisplacedCount(st) {
+  const cc = faceletToCubie(flOf(st));
+  let n = 0;
+  for (let s = 0; s < 4; s++) if (!f2lPairSolved(cc, s)) n++;
+  return n;
+}
+function crossEdgesSolved(fl) { // chỉ 4 cạnh của dấu cộng trắng: đúng vị trí + khớp màu tâm bên
+  return fl[28] === 'D' && fl[30] === 'D' && fl[32] === 'D' && fl[34] === 'D' &&
+    fl[25] === 'F' && fl[16] === 'R' && fl[43] === 'L' && fl[52] === 'B';
+}
+function genF2L1(rng) {
+  // Dấu cộng trắng + 3 cặp xong sẵn; cặp còn lại nằm ở tầng trên trong một
+  // thế cơ bản (chèn sẵn / ghép phải / ghép trước / trắng hướng lên).
+  while (true) {
+    const st = solvedStickers();
+    const alg = F2L_TEACH[(rng() * F2L_TEACH.length) | 0];
+    const slot = (rng() * 4) | 0;
+    applyAlgAtSlot(st, invertAlgMoves(alg), slot);
+    const fl = flOf(st);
+    if (crossEdgesSolved(fl) && !checkF2L(fl) && f2lDisplacedCount(st) === 1) return st;
+  }
+}
+function genF2L4(rng) {
+  // Dấu cộng trắng xong; cả 4 cặp bị lôi ra tầng trên / kẹt sai — mỗi khe
+  // bị lấy ra đúng 1 lần bằng một công thức nghịch ngẫu nhiên.
+  while (true) {
+    const st = solvedStickers();
+    const order = [0, 1, 2, 3];
+    for (let i = 3; i > 0; i--) { const j = (rng() * (i + 1)) | 0; [order[i], order[j]] = [order[j], order[i]]; }
+    for (const slot of order) {
+      const alg = F2L_ALL[(rng() * F2L_ALL.length) | 0];
+      applyAlgAtSlot(st, invertAlgMoves(alg), slot);
+    }
+    const fl = flOf(st);
+    if (crossEdgesSolved(fl) && !checkF2L(fl) && f2lDisplacedCount(st) === 4) return st;
+  }
+}
 function genFreeScramble(rng) {
   const faces = ['U', 'R', 'F', 'D', 'L', 'B'];
   const toks = [];
@@ -1002,6 +1070,8 @@ function goalFor(mode, st) {
   const fl = flOf(st);
   switch (mode) {
     case 'layer2': return checkF2L(fl);
+    case 'f2l1': return checkF2L(fl); // F2L xong = đủ 2 tầng dưới, tầng 3 kệ
+    case 'f2l4': return checkF2L(fl);
     case 'cross': return checkYellowCross(fl) && checkF2L(fl);
     case 'edges': return checkEdgesAligned(fl) && checkF2L(fl);
     case 'corners': return checkCornersInPlace(fl) && checkEdgesAligned(fl) && checkF2L(fl);
@@ -1027,7 +1097,7 @@ function detectStage(fl) {
 
 if (typeof module !== 'undefined') Object.assign(module.exports, {
   mulberry32, genLayer2, genCross, genEdges, genCorners, genFlip, genFreeScramble,
-  genSune, genAA, genUA, AA_ALG, UA_ALG,
+  genSune, genAA, genUA, AA_ALG, UA_ALG, genF2L1, genF2L4,
   goalFor, detectStage, flOf, checkBottom, checkF2L, checkYellowCross, checkEdgesAligned, checkCornersInPlace, checkSolvedNorm, checkCornersOriented
 });
 
@@ -1145,6 +1215,8 @@ function parseAlgSpatial(str) {
 const MODES = {
   free:    { name: 'Chơi tự do', desc: 'Xáo trộn ngẫu nhiên cả khối và giải từ đầu theo phương pháp cơ bản: tầng 1 (trắng ở dưới) → tầng 2 → 4 bước tầng 3.' },
   layer2:  { name: 'Luyện tầng 2', desc: 'Tầng 1 đã xong sẵn. Chỉ 4 cạnh tầng giữa bị xáo — luyện 2 công thức chèn cạnh phải / chèn cạnh trái cho thuộc tay. Mục tiêu: đủ 2 tầng dưới.' },
+  f2l1:    { name: 'F2L · Luyện 1 cặp', desc: 'F2L — cách làm 2 tầng đầu kiểu tốc độ (chèn cả cặp góc + cạnh cùng lúc): dấu cộng trắng và 3 cặp đã xong sẵn, chỉ còn 1 cặp đang ở tầng trên trong một thế cơ bản — cặp đã ghép sẵn, hoặc góc trắng hướng phải / hướng trước / hướng lên. Tìm cặp còn thiếu, cầm khối cho khe của nó ở trước–phải rồi dùng đúng công thức trong thẻ F2L cơ bản ở dưới. Mục tiêu: đủ 2 tầng dưới; tầng 3 chưa cần quan tâm.' },
+  f2l4:    { name: 'F2L · Luyện 4 cặp', desc: 'F2L: dấu cộng trắng đã xong, cả 4 cặp đều đang ở tầng trên hoặc kẹt sai trong khe. Lần lượt tìm từng cặp (góc có ô trắng + cạnh 2 màu trùng bộ màu của góc) và chèn vào đúng khe của nó bằng các công thức trong thẻ F2L cơ bản. Mục tiêu: đủ 2 tầng dưới; tầng 3 chưa cần quan tâm.' },
   cross:   { name: 'Tầng 3 · Bước 1: Dấu cộng vàng', desc: '2 tầng dưới đã xong. Mặt vàng đang ở dạng chấm / chữ L / vạch ngang — dùng F R U R′ U′ F′ (1–3 lần) để tạo dấu cộng vàng. Cách cầm: chữ L để ở góc trên–trái, vạch ngang để nằm ngang.' },
   edges:   { name: 'Tầng 3 · Bước 2: Đưa 4 cạnh đúng tâm', desc: 'Dấu cộng vàng đã có, chỉ còn các cạnh chưa khớp màu tâm. Công thức: R U R′ U R U2 R′ U. Cách cầm: 2 cạnh đúng kề nhau để ở SAU + PHẢI; nếu 2 cạnh đúng đối diện nhau, cứ làm công thức 1 lần ở vị trí bất kỳ rồi cầm lại.' },
   corners: { name: 'Tầng 3 · Bước 3: Đưa 4 góc đúng vị trí', desc: '4 cạnh đã đúng tâm, chỉ còn các góc chưa về đúng khe (đúng bộ 3 màu là được, chưa cần vàng ngửa lên). Công thức: U R U′ L′ U R′ U′ L. Cách cầm: góc đã đúng để ở TRƯỚC–PHẢI–TRÊN; chưa có góc nào đúng thì làm 1 lần ở vị trí bất kỳ.' },
@@ -1168,6 +1240,17 @@ const FORMULAS_NEW = [
   { t: 'Bước 2 — Lật hướng 4 góc: Sune', d: '1 góc vàng ngửa (hình cá): để góc ngửa ở trước–trái; góc trước–phải có vàng ở mặt trước → Sune. Vàng ở mặt phải → cá gương: Antisune với góc ngửa ở trước–phải. 0 hoặc 2 góc ngửa: xoay U cho góc trước–trái có ô vàng ở mặt trước, làm Sune 1 lần rồi đếm lại.', algs: [{ label: '▶ Sune', alg: "R U R' U R U2 R'" }, { label: '▶ Antisune', alg: "L' U' L U' L' U2 L" }] },
   { t: 'Bước 3 — Góc về đúng vị trí: AA', d: 'Giữ nguyên góc trước–trái, tráo vòng 3 góc còn lại. Tìm góc đã đúng vị trí, xoay cả khối đưa về trước–trái rồi làm AA (tối đa 2 lần); không có góc đúng thì làm AA 1 lần bừa; AA 2 lần với cùng góc neo mà chưa xong thì xoay U 1 cái rồi làm lại.', algs: [{ alg: "R' F R' B2 R F' R' B2 R2" }] },
   { t: 'Bước 4 — Cạnh về đúng tâm: UA', d: 'Giữ nguyên cạnh phía sau, tráo vòng 3 cạnh còn lại. Tìm cạnh đã đúng, xoay cả khối đưa ra phía sau rồi làm UA (tối đa 3 lần). Bước này không xoay U.', algs: [{ alg: "R U' R U R U R U' R' U' R2" }] }
+];
+// Thẻ F2L cơ bản: khe chuẩn là trước–phải (riêng chèn trái dùng khe
+// trước–trái). Cặp = góc có ô trắng + cạnh mang đúng 2 màu còn lại của góc.
+const FORMULAS_F2L = [
+  { t: 'Chèn phải — cặp đã ghép sẵn', alg: "U R U' R'", d: 'Cặp góc + cạnh đã ghép đúng ở tầng trên, góc nằm ngay trên khe trước–phải và ô trắng của góc hướng về mặt trước. Đẩy cả cặp xuống khe phải.' },
+  { t: 'Chèn trái — cặp đã ghép sẵn (bản gương)', alg: "U' L' U L", d: 'Như chèn phải nhưng khe ở trước–trái: cặp đã ghép sẵn, góc nằm ngay trên khe trước–trái, ô trắng hướng về mặt trước.' },
+  { t: 'Ghép + chèn — trắng hướng phải', alg: "R U R'", d: 'Góc ở ngay trên khe, ô trắng hướng sang phải; cạnh đang ở vị trí sau (UB) và ô trên của cạnh là màu của mặt trước. Một công thức vừa ghép cặp vừa chèn xuống khe.' },
+  { t: 'Ghép + chèn — trắng hướng trước', alg: "F' U' F", d: 'Góc ở ngay trên khe, ô trắng hướng về mặt trước; cạnh đang ở vị trí trái (UL) và ô trên của cạnh là màu của mặt phải.' },
+  { t: 'Trắng hướng lên', alg: "R U2 R' U' R U R'", d: 'Ô trắng của góc ngửa lên trên; cạnh nằm ngay bên phải góc (UR) và ô trên của cạnh là màu của mặt trước.' },
+  { t: 'Góc kẹt trong khe — trắng hướng trước', alg: "R U' R' U R U' R'", d: 'Góc đang nằm sẵn trong khe trước–phải nhưng sai hướng (ô trắng hướng ra mặt trước); cạnh ở UR, ô trên của cạnh là màu mặt trước. Công thức lôi góc ra, ghép cặp rồi chèn lại cho đúng.' },
+  { t: 'Lôi cặp ra khỏi khe', alg: "R U R'", d: 'Khi cặp bị kẹt sai trong khe (sai hướng hoặc nhầm cặp): lôi cả cặp lên tầng trên để xử lý lại từ đầu.' }
 ];
 const STAGE_TEXT = [
   'Bạn đang ở: <b>Tầng 1</b> — làm dấu cộng trắng và 4 góc trắng (mặt trắng ở dưới, vàng ở trên).',
@@ -1565,6 +1648,8 @@ function startRound(m) {
   let st;
   if (m === 'free') { st = genFreeScramble(rng).stickers; }
   else if (m === 'layer2') st = genLayer2(rng);
+  else if (m === 'f2l1') st = genF2L1(rng);
+  else if (m === 'f2l4') st = genF2L4(rng);
   else if (m === 'cross') st = genCross(rng);
   else if (m === 'edges') st = genEdges(rng);
   else if (m === 'corners') st = genCorners(rng);
@@ -1583,6 +1668,8 @@ function updateModeDesc() {
   const el = document.getElementById('modeDesc');
   let extra = '';
   if (mode === 'layer2') extra = '<div class="formula-line">Chèn phải: ' + algHtml("U R U' R' U' F' U F") + '<br>Chèn trái: ' + algHtml("U' L' U L U F U' F'") + '</div>';
+  if (mode === 'f2l1') extra = '<div class="formula-line">Chèn phải (đã ghép): ' + algHtml("U R U' R'") + '<br>Ghép — trắng hướng phải: ' + algHtml("R U R'") + ' · trắng hướng trước: ' + algHtml("F' U' F") + '<br>Trắng hướng lên: ' + algHtml("R U2 R' U' R U R'") + '</div>';
+  if (mode === 'f2l4') extra = '<div class="formula-line">Chèn phải (đã ghép): ' + algHtml("U R U' R'") + ' · chèn trái: ' + algHtml("U' L' U L") + '<br>Ghép — trắng hướng phải: ' + algHtml("R U R'") + ' · trắng hướng trước: ' + algHtml("F' U' F") + '<br>Trắng hướng lên: ' + algHtml("R U2 R' U' R U R'") + ' · góc kẹt trong khe: ' + algHtml("R U' R' U R U' R'") + '</div>';
   if (mode === 'cross') extra = '<div class="formula-line">Công thức: ' + algHtml("F R U R' U' F'") + '</div>';
   if (mode === 'edges') extra = '<div class="formula-line">Công thức: ' + algHtml("R U R' U R U2 R' U") + '</div>';
   if (mode === 'corners') extra = '<div class="formula-line">Công thức: ' + algHtml("U R U' L' U R' U' L") + '</div>';
@@ -2356,6 +2443,33 @@ afterMoveCommitted = function () {
       });
       row.appendChild(alg); row.appendChild(btn);
     }
+    card.appendChild(row);
+    box.appendChild(card);
+  }
+})();
+// formula cards — F2L cơ bản (mỗi thẻ 1 công thức, áp dụng thử theo khung
+// mặt theo vị trí hiện tại như mọi thẻ khác)
+(function buildFormulasF2L() {
+  const box = document.getElementById('formulaCardsF2L');
+  if (!box) return;
+  for (const fc of FORMULAS_F2L) {
+    const card = document.createElement('div');
+    card.className = 'formula-card';
+    card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
+    const row = document.createElement('div');
+    row.className = 'row';
+    const alg = document.createElement('span');
+    alg.innerHTML = algHtml(fc.alg);
+    const btn = document.createElement('button');
+    btn.className = 'btn small formula-apply';
+    btn.textContent = '▶ Áp dụng thử';
+    btn.addEventListener('click', () => {
+      if (isDemoActive()) interruptDemo();
+      hideBanner();
+      for (const mv of parseAlgSpatial(fc.alg)) enqueueMove(mv, { dur: 210 });
+      lastHint = null; document.getElementById('hintOut').classList.remove('show');
+    });
+    row.appendChild(alg); row.appendChild(btn);
     card.appendChild(row);
     box.appendChild(card);
   }
