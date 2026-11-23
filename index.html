@@ -6,7 +6,7 @@
     <meta name="color-scheme" content="light dark" />
     <meta name="theme-color" media="(prefers-color-scheme: light)" content="#e9edf0" />
     <meta name="theme-color" media="(prefers-color-scheme: dark)" content="#10151b" />
-    <meta name="description" content="Chơi Rubik 3x3 3D trên trình duyệt: vuốt xoay lớp theo ngón tay, gợi ý nước đi, undo/redo và các chế độ luyện công thức tầng 2, tầng 3." />
+    <meta name="description" content="Chơi Rubik 3x3 3D trên trình duyệt: vuốt xoay lớp theo ngón tay, gợi ý nước đi, undo/redo, các chế độ luyện công thức tầng 2, tầng 3, F2L và tab học đủ 57 công thức OLL." />
     <link rel="manifest" href="manifest.webmanifest" />
     <link rel="icon" type="image/png" sizes="192x192" href="data:image/png;base64,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" />
     <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -187,10 +187,43 @@
       .confetti i { position: absolute; top: -12px; width: 9px; height: 14px; border-radius: 2px; animation: fall 1.6s ease-in forwards; }
       @keyframes fall { to { transform: translateY(560px) rotate(560deg); opacity: .2; } }
       @media (prefers-reduced-motion: reduce) { .confetti i { animation: none; } }
+      .tabbar {
+        position: sticky; top: 0; z-index: 50; display: flex; gap: 8px;
+        padding: 8px 0; background: var(--bg);
+      }
+      .tabbar button {
+        flex: 1; min-height: 48px; border-radius: 12px; border: 1.5px solid var(--line);
+        background: var(--surface); color: var(--ink); font-weight: 800; font-size: 15.5px;
+        box-shadow: var(--shadow); padding: 6px 8px;
+      }
+      .tabbar button.on { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+      .tabbar button:disabled { opacity: .45; cursor: default; }
+      .oll-intro { font-size: 14.5px; line-height: 1.55; margin: 0; }
+      .oll-group-title { margin: 20px 2px 8px; font-size: 16.5px; }
+      .oll-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
+      @media (max-width: 400px) { .oll-grid { grid-template-columns: repeat(auto-fill, minmax(148px, 1fr)); } }
+      .oll-card {
+        background: var(--surface); border: 1px solid var(--line); border-radius: 14px;
+        padding: 10px; box-shadow: var(--shadow);
+      }
+      .oll-card .oll-num { font-weight: 900; font-size: 16px; }
+      .oll-diagram { display: block; margin: 4px auto 2px; width: 104px; height: 104px; }
+      .oll-diagram rect { stroke: rgba(15, 25, 40, .45); stroke-width: .8; }
+      .oll-diagram .y { fill: #ffd43b; }
+      .oll-diagram .n { fill: #aebccb; }
+      @media (prefers-color-scheme: dark) { .oll-diagram .n { fill: #54687c; } }
+      .oll-card .alg { margin-top: 4px; }
+      .oll-card .row { display: flex; gap: 6px; margin-top: 9px; }
+      .oll-card .row .btn { flex: 1; padding: 4px 2px; }
     </style>
   </head>
   <body>
     <div class="wrap">
+      <div class="tabbar" role="tablist" aria-label="Chuyển tab">
+        <button id="tabBtnPlay" class="on" role="tab" aria-selected="true">🎲 Chơi &amp; luyện</button>
+        <button id="tabBtnOll" role="tab" aria-selected="false">📚 Học OLL · 57</button>
+      </div>
+      <div id="tabPlay">
       <div class="layout">
         <div class="main-col">
           <div class="statusbar">
@@ -313,9 +346,22 @@
               <li><b>Phím tắt (máy tính):</b> U R F D L B để xoay, giữ Shift để xoay ngược, Ctrl+Z hoàn tác.</li>
               <li><b>Cài app:</b> bấm nút “📲 Cài app” ở dưới khối để cài trang này như một ứng dụng (mở từ màn hình chính, chơi offline). Nếu nút chưa hiện lời mời cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” / “Thêm vào màn hình chính”.</li>
               <li>Khi luyện tập, khối chỉ xáo đúng phần cần luyện — các phần đã học xong được giữ nguyên để bạn tập trung vào công thức đang học.</li>
+              <li><b>Tab Học OLL:</b> đủ 57 công thức OLL chuẩn quốc tế xếp theo nhóm hình. Mỗi thẻ có sơ đồ thế (nhìn từ trên xuống, cạnh dưới của sơ đồ là mặt trước, ô vàng = ô đang hướng lên mặt trên), nút “Luyện thế này” để đưa khối về đúng thế đó tự giải, và nút “Xem giải” để xem máy quay công thức. Ký hiệu chữ thường (r, l, f…) = xoay 2 lớp cùng lúc: mặt đó cộng lớp giữa kề nó; M = lớp giữa dọc. Chế độ “OLL · Ngẫu nhiên” ở tab Chơi &amp; luyện cho bạn một thế OLL bất kỳ để tự nhận diện và giải.</li>
             </ul>
           </details>
         </div>
+      </div>
+      </div>
+
+      <div id="tabOll" hidden>
+        <div class="panel" style="margin-top:0">
+          <h3>📚 Học OLL — 57 công thức lật hướng tầng cuối</h3>
+          <p class="oll-intro">OLL (Orientation of the Last Layer): sau khi xong 2 tầng dưới (F2L), <b>một</b> công thức OLL lật hướng toàn bộ tầng cuối cho mặt vàng hoàn chỉnh — sau đó chỉ còn bước PLL xếp vị trí là xong khối. Sơ đồ mỗi thẻ là thế nhìn <b>từ trên xuống</b>: ô vàng = ô đang hướng lên mặt trên, các ô viền quanh là ô mặt bên của tầng trên; <b>cạnh dưới của sơ đồ là mặt trước</b> — cầm khối đúng như sơ đồ rồi làm công thức. Ký hiệu mở rộng: chữ thường <b>r, l, f</b> = xoay 2 lớp cùng lúc (mặt đó + lớp giữa kề nó), <b>M</b> = lớp giữa dọc. OLL 26 / 27 chính là Antisune / Sune bạn đã học ở phương pháp tầng 3 mới.</p>
+          <div class="mode-actions">
+            <button class="btn primary" id="btnOllRandom">🎲 Luyện 1 thế OLL ngẫu nhiên</button>
+          </div>
+        </div>
+        <div id="ollGroups"></div>
       </div>
     </div>
 <script>
@@ -1030,6 +1076,104 @@ function genFreeScramble(rng) {
   return { stickers: st, scramble: toks.join(' ') };
 }
 
+// ===== OLL: 57 thế lật hướng tầng cuối (bảng chuẩn quốc tế) =====
+// Công thức chuẩn kiểu J Perm / cubeskills. Thế của mỗi OLL được SUY RA từ
+// chính công thức: thế = khối đã giải + áp dụng công thức NGHỊCH, nên sơ đồ
+// vẽ từ thế đó luôn khớp công thức 100%. Đã kiểm chứng bằng mô phỏng với
+// mô hình của trang: cả 57 công thức giữ nguyên F2L; thế tạo ra có F2L
+// nguyên vẹn và tầng cuối CHƯA đúng hướng; áp dụng công thức vào thế thì
+// giải xong cả khối; 57 mẫu hướng (theo vòng xoay U) phân biệt nhau và phủ
+// đúng toàn bộ 57 mẫu hợp lệ (liệt kê mọi trạng thái hướng hợp lệ cho 58
+// lớp gồm cả trạng thái đã giải).
+// Ký hiệu mở rộng so với parseAlg thường: chữ thường r/l/f/u/d/b = xoay
+// 2 lớp cùng lúc (mặt đó + lớp giữa kề nó); M/E/S = lớp giữa.
+function expandTokenFull(tok) {
+  tok = tok.replace(/[()]/g, '').trim();
+  if (!tok) return [];
+  const base = tok[0];
+  let power = 1;
+  if (tok.includes('2')) power = 2; else if (tok.includes("'")) power = 3;
+  if ('UDFBRL'.includes(base)) return [faceMove(base, power)];
+  if (base === 'M') return [{ axis: 0, layer: 0, q: power === 2 ? 2 : power === 3 ? -1 : 1 }];
+  if (base === 'E') return [{ axis: 1, layer: 0, q: power === 2 ? 2 : power === 3 ? -1 : 1 }];
+  if (base === 'S') return [{ axis: 2, layer: 0, q: power === 2 ? 2 : power === 3 ? 1 : -1 }]; // S đi theo hướng F
+  if ('udfbrl'.includes(base)) {
+    const fm = faceMove(base.toUpperCase(), power);
+    return [fm, { axis: fm.axis, layer: 0, q: fm.q }];
+  }
+  throw new Error('bad token ' + tok);
+}
+function parseAlgFull(str) {
+  const out = [];
+  for (const t of str.trim().split(/\s+/).filter(Boolean)) out.push(...expandTokenFull(t));
+  return out;
+}
+function invertAlgFull(str) { return parseAlgFull(str).slice().reverse().map(invertMove); }
+const OLL_ALGS = {
+  1: "R U2 R2 F R F' U2 R' F R F'", 2: "F R U R' U' F' f R U R' U' f'",
+  3: "f R U R' U' f' U' F R U R' U' F'", 4: "f R U R' U' f' U F R U R' U' F'",
+  5: "l' U2 L U L' U l", 6: "r U2 R' U' R U' r'",
+  7: "r U R' U R U2 r'", 8: "l' U' L U' L' U2 l",
+  9: "R U R' U' R' F R2 U R' U' F'", 10: "R U R' U R' F R F' R U2 R'",
+  11: "r U R' U R' F R F' R U2 r'", 12: "l' U' L U' L F' L' F L' U2 l",
+  13: "F U R U' R2 F' R U R U' R'", 14: "R' F R U R' F' R F U' F'",
+  15: "l' U' l L' U' L U l' U l", 16: "r U r' R U R' U' r U' r'",
+  17: "R U R' U R' F R F' U2 R' F R F'", 18: "r U R' U R U2 r2 U' R U' R' U2 r",
+  19: "M U R U R' U' M' R' F R F'", 20: "M U R U R' U' M2 U R U' r'",
+  21: "R U R' U R U' R' U R U2 R'", 22: "R U2 R2 U' R2 U' R2 U2 R",
+  23: "R2 D R' U2 R D' R' U2 R'", 24: "r U R' U' r' F R F'",
+  25: "F' r U R' U' r' F R", 26: "R U2 R' U' R U' R'",
+  27: "R U R' U R U2 R'", 28: "M' U M U2 M' U M",
+  29: "R U R' U' R U' R' F' U' F R U R'", 30: "F U R U2 R' U' R U2 R' U' F'",
+  31: "R' U' F U R U' R' F' R", 32: "L U F' U' L' U L F L'",
+  33: "R U R' U' R' F R F'", 34: "R U R2 U' R' F R U R U' F'",
+  35: "R U2 R' R' F R F' R U2 R'", 36: "L' U' L U' L' U L U L F' L' F",
+  37: "F R' F' R U R U' R'", 38: "R U R' U R U' R' U' R' F R F'",
+  39: "L F' L' U' L U F U' L'", 40: "R' F R U R' U' F' U R",
+  41: "R U R' U R U2 R' F R U R' U' F'", 42: "R' U' R U' R' U2 R F R U R' U' F'",
+  43: "f' L' U' L U f", 44: "f R U R' U' f'",
+  45: "F R U R' U' F'", 46: "R' U' R' F R F' U R",
+  47: "R' U' R' F R F' R' F R F' U R", 48: "F R U R' U' R U R' U' F'",
+  49: "r U' r2 U r2 U r2 U' r", 50: "r' U r2 U' r2 U' r2 U r'",
+  51: "f R U R' U' R U R' U' f'", 52: "R U R' U R U' B U' B' R'",
+  53: "l' U2 L U L' U' L U L' U l", 54: "r U2 R' U' R U R' U' R U' r'",
+  55: "R U2 R2 U' R U' R' U2 F R F'", 56: "r U r' U R U' R' U R U' R' r U' r'",
+  57: "R U R' U' M' U R U' r'"
+};
+const OLL_GROUPS = [
+  { name: 'Nhóm Chấm — không cạnh nào hướng lên', cases: [1, 2, 3, 4, 17, 18, 19, 20] },
+  { name: 'Nhóm dấu cộng — cả 4 cạnh đã hướng lên', cases: [21, 22, 23, 24, 25, 26, 27] },
+  { name: 'Nhóm chỉ còn cạnh — 4 góc đã hướng đúng hết', cases: [28, 57] },
+  { name: 'Nhóm chữ T', cases: [33, 45] },
+  { name: 'Nhóm hình Vuông', cases: [5, 6] },
+  { name: 'Nhóm chữ C', cases: [34, 46] },
+  { name: 'Nhóm chữ W', cases: [36, 38] },
+  { name: 'Nhóm chữ P', cases: [31, 32, 43, 44] },
+  { name: 'Nhóm chữ I', cases: [51, 52, 55, 56] },
+  { name: 'Nhóm Cá', cases: [9, 10, 35, 37] },
+  { name: 'Nhóm Hiệp sĩ', cases: [13, 14, 15, 16] },
+  { name: 'Nhóm Khó', cases: [29, 30, 41, 42] },
+  { name: 'Nhóm chữ L', cases: [47, 48, 49, 50, 53, 54] },
+  { name: 'Nhóm Tia chớp', cases: [7, 8, 11, 12, 39, 40] }
+];
+// Thế OLL n ở hướng cầm chuẩn của công thức (rotU = số lần xoay U thêm,
+// chỉ dùng cho chế độ luyện ngẫu nhiên).
+function ollCaseStickers(n, rotU) {
+  const st = solvedStickers();
+  applyMovesTo(st, invertAlgFull(OLL_ALGS[n]));
+  const r = ((rotU || 0) % 4 + 4) % 4;
+  for (let i = 0; i < r; i++) applyMoveStickers(st, faceMove('U', 1));
+  return st;
+}
+function genOLLPractice(rng) {
+  const n = 1 + ((rng() * 57) | 0);
+  return ollCaseStickers(n, (rng() * 4) | 0);
+}
+function checkLLOriented(fl) { // cả 9 ô mặt trên đều vàng ⇔ mọi viên tầng cuối đã đúng hướng
+  for (let i = 0; i < 9; i++) if (fl[i] !== 'U') return false;
+  return true;
+}
+
 // ===== Goal checks (on normalized facelets) =====
 const SOLVED_FL = Array.from({ length: 54 }, (_, i) => 'URFDLB'[(i / 9) | 0]);
 function flOf(st) { return normalizedFacelets(st).facelets; }
@@ -1079,6 +1223,7 @@ function goalFor(mode, st) {
     case 'sune': return checkCornersOriented(fl); // phương pháp mới bước 2: CHỈ cần hướng góc, vị trí để bước AA lo
     case 'aa': return checkCornersInPlace(fl) && checkCornersOriented(fl) && checkEdgesAligned(fl) && checkF2L(fl);
     case 'ua': return checkSolvedNorm(fl);
+    case 'oll': return checkLLOriented(fl) && checkF2L(fl); // chỉ tính HƯỚNG tầng cuối, vị trí kệ
     case 'free': return isSolvedUniform(st);
     default: return false;
   }
@@ -1098,7 +1243,8 @@ function detectStage(fl) {
 if (typeof module !== 'undefined') Object.assign(module.exports, {
   mulberry32, genLayer2, genCross, genEdges, genCorners, genFlip, genFreeScramble,
   genSune, genAA, genUA, AA_ALG, UA_ALG, genF2L1, genF2L4,
-  goalFor, detectStage, flOf, checkBottom, checkF2L, checkYellowCross, checkEdgesAligned, checkCornersInPlace, checkSolvedNorm, checkCornersOriented
+  goalFor, detectStage, flOf, checkBottom, checkF2L, checkYellowCross, checkEdgesAligned, checkCornersInPlace, checkSolvedNorm, checkCornersOriented,
+  parseAlgFull, invertAlgFull, expandTokenFull, OLL_ALGS, OLL_GROUPS, ollCaseStickers, genOLLPractice, checkLLOriented
 });
 
 </script>
@@ -1223,7 +1369,8 @@ const MODES = {
   flip:    { name: 'Tầng 3 · Bước 4: Lật góc', desc: 'Mọi viên đã đúng vị trí, chỉ còn góc bị nghiêng. Giữ góc sai ở trước–phải–trên, lặp R′ D′ R D (2 hoặc 4 vòng) đến khi vàng ngửa lên, rồi CHỈ xoay U sang góc sai tiếp theo — đừng xoay cả khối, tầng dưới rối tạm là bình thường.' },
   sune:    { name: 'Tầng 3 mới · Sune: lật hướng góc', desc: 'Phương pháp MỚI — bước 2: mọi viên đang ở nguyên vị trí, cạnh giữ nguyên, chỉ có hướng của 4 góc tầng trên bị xoắn. Dùng Sune để lật cả 4 góc cho vàng ngửa lên trên. Mục tiêu của bài này CHỈ là hướng góc — vị trí góc chưa cần đúng, để bước AA lo. Cả phương pháp mới không có nước D nào.' },
   aa:      { name: 'Tầng 3 mới · AA: góc về vị trí', desc: 'Phương pháp MỚI — bước 3: 4 góc đã ngửa vàng, các cạnh đã xong, chỉ còn vị trí các góc bị tráo vòng. Công thức AA giữ nguyên góc trước–trái và tráo vòng 3 góc còn lại — không đụng cạnh, không xoắn góc nào.' },
-  ua:      { name: 'Tầng 3 mới · UA: cạnh về tâm', desc: 'Phương pháp MỚI — bước 4: 4 góc đã xong hết, chỉ còn 3 cạnh tầng trên tráo vòng nhau. Công thức UA giữ nguyên cạnh phía sau và tráo vòng 3 cạnh còn lại — không đụng góc. Mục tiêu: giải xong cả khối.' }
+  ua:      { name: 'Tầng 3 mới · UA: cạnh về tâm', desc: 'Phương pháp MỚI — bước 4: 4 góc đã xong hết, chỉ còn 3 cạnh tầng trên tráo vòng nhau. Công thức UA giữ nguyên cạnh phía sau và tráo vòng 3 cạnh còn lại — không đụng góc. Mục tiêu: giải xong cả khối.' },
+  oll:     { name: 'OLL · Ngẫu nhiên', desc: 'Một thế OLL ngẫu nhiên trong 57 thế chuẩn quốc tế: 2 tầng dưới đã xong sẵn, chỉ có hướng của tầng cuối bị xáo (vị trí các viên tầng cuối chưa cần đúng). Mục tiêu: lật hướng toàn bộ tầng cuối cho mặt trên vàng hết — vị trí để bước PLL lo. Nhận diện thế (đếm cạnh vàng hướng lên: 0 / 2 / 4, rồi nhìn hình các góc) và tra công thức ở tab “Học OLL”.' }
 };
 const FORMULAS = [
   { t: 'Tầng 2 — Chèn cạnh sang PHẢI', alg: "U R U' R' U' F' U F", d: 'Cạnh cần chèn đang ở tầng trên, màu mặt trước khớp tâm mặt trước. Đưa cạnh lên trên–phải rồi chèn xuống khe phải.' },
@@ -1525,6 +1672,7 @@ function saveState() {
       moveLog: moveLog,
       moveCount: moveCount + extra,
       mode: mode,
+      tab: activeTab,
       roundActive: roundActive,
       roundDone: roundDone,
       timerElapsed: elapsedMs(),
@@ -1574,6 +1722,7 @@ function restoreSavedState() {
     renderLog();
     render();
     updateStats();
+    setTab(data.tab === 'oll' ? 'oll' : 'play');
     if (roundActive && !roundDone && data.timerRunning) startTimer();
     showBanner('<span class="big">↩ Đã khôi phục ván trước</span>Khối, các nước đã đi, thời gian và góc nhìn được lưu tự động sau mỗi thay đổi — ván dở của bạn vẫn nguyên như lúc rời trang, cứ chơi tiếp.',
       false,
@@ -1657,6 +1806,7 @@ function startRound(m) {
   else if (m === 'sune') st = genSune(rng);
   else if (m === 'aa') st = genAA(rng);
   else if (m === 'ua') st = genUA(rng);
+  else if (m === 'oll') st = genOLLPractice(rng);
   else st = genFlip(rng);
   setStickers(st);
   roundActive = true;
@@ -1677,6 +1827,7 @@ function updateModeDesc() {
   if (mode === 'sune') extra = '<div class="formula-line">Sune: ' + algHtml("R U R' U R U2 R'") + '<br>Antisune (cá gương): ' + algHtml("L' U' L U' L' U2 L") + '</div>';
   if (mode === 'aa') extra = '<div class="formula-line">Công thức AA: ' + algHtml("R' F R' B2 R F' R' B2 R2") + '</div>';
   if (mode === 'ua') extra = '<div class="formula-line">Công thức UA: ' + algHtml("R U' R U R U R U' R' U' R2") + '</div>';
+  if (mode === 'oll') extra = '<div class="formula-line">Mẹo nhận diện: đếm số cạnh vàng đang hướng lên (0 / 2 / 4) để khoanh nhóm, rồi so hình mặt trên với sơ đồ ở tab “Học OLL”.</div>';
   el.innerHTML = MODES[mode].desc + extra;
 }
 function algHtml(str) {
@@ -1994,10 +2145,10 @@ let demoPreparing = false;
 function isDemoActive() { return !!demo && (demo.state === 'playing' || demo.state === 'paused'); }
 function demoEase(t) { return t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2; }
 function setDemoLocks(on) {
-  const ids = ['btnHint', 'btnHintAgain', 'btnDoHint', 'btnDemo', 'btnScramble', 'btnReset', 'btnStartMode', 'btnShuffleMode', 'btnUndo', 'btnRedo'];
+  const ids = ['btnHint', 'btnHintAgain', 'btnDoHint', 'btnDemo', 'btnScramble', 'btnReset', 'btnStartMode', 'btnShuffleMode', 'btnUndo', 'btnRedo', 'tabBtnPlay', 'tabBtnOll', 'btnOllRandom'];
   for (const id of ids) { const el = document.getElementById(id); if (el) el.disabled = on; }
   document.querySelectorAll('#modeChips .chip').forEach(ch => { ch.disabled = on; });
-  document.querySelectorAll('.formula-apply').forEach(b => { b.disabled = on; });
+  document.querySelectorAll('.formula-apply, .oll-act').forEach(b => { b.disabled = on; });
   if (!on) updateStats(); // trả lại trạng thái disabled đúng của undo/redo theo history
 }
 function renderDemoSpeed() {
@@ -2474,8 +2625,112 @@ afterMoveCommitted = function () {
     box.appendChild(card);
   }
 })();
+// ---------- Tabs: Chơi & luyện / Học OLL ----------
+let activeTab = 'play';
+function setTab(t) {
+  activeTab = t;
+  document.getElementById('tabPlay').hidden = t !== 'play';
+  document.getElementById('tabOll').hidden = t !== 'oll';
+  const bp = document.getElementById('tabBtnPlay'), bo = document.getElementById('tabBtnOll');
+  bp.classList.toggle('on', t === 'play'); bp.setAttribute('aria-selected', t === 'play' ? 'true' : 'false');
+  bo.classList.toggle('on', t === 'oll'); bo.setAttribute('aria-selected', t === 'oll' ? 'true' : 'false');
+  if (t === 'play') { fitCanvas(); render(); } // canvas bị ẩn khi ở tab OLL: về tab chơi phải đo lại kích thước
+  saveState();
+}
+document.getElementById('tabBtnPlay').addEventListener('click', () => setTab('play'));
+document.getElementById('tabBtnOll').addEventListener('click', () => setTab('oll'));
+document.getElementById('btnOllRandom').addEventListener('click', () => { startRound('oll'); setTab('play'); });
+
+// ---------- Tab Học OLL: thẻ 57 thế ----------
+// Sơ đồ thế vẽ TỪ trạng thái suy ra bằng công thức nghịch (ollCaseStickers)
+// nên luôn khớp công thức. Quy ước vẽ (nhìn từ trên xuống, cạnh dưới là
+// mặt trước): 3×3 giữa là mặt trên; 4 dải viền là hàng trên của 4 mặt bên
+// (sau ở trên, trước ở dưới, trái/phải theo đúng vị trí khi nhìn từ trên).
+function ollDiagramSvg(fl) {
+  const cell = (x, y, w, h, up) => '<rect x="' + x + '" y="' + y + '" width="' + w + '" height="' + h + '" rx="1.6" class="' + (up ? 'y' : 'n') + '"/>';
+  let s = '<svg class="oll-diagram" viewBox="0 0 52 52" role="img" aria-label="Sơ đồ thế OLL nhìn từ trên xuống">';
+  const Y = i => fl[i] === 'U';
+  // dải mặt sau (trên): trái→phải = fl[47], fl[46], fl[45]
+  [47, 46, 45].forEach((fi, k) => { s += cell(11 + k * 10, 3, 9, 6, Y(fi)); });
+  // dải mặt trước (dưới): trái→phải = fl[18], fl[19], fl[20]
+  [18, 19, 20].forEach((fi, k) => { s += cell(11 + k * 10, 43, 9, 6, Y(fi)); });
+  // dải mặt trái: trên→dưới = fl[36], fl[37], fl[38]
+  [36, 37, 38].forEach((fi, k) => { s += cell(3, 11 + k * 10, 6, 9, Y(fi)); });
+  // dải mặt phải: trên→dưới = fl[11], fl[10], fl[9]
+  [11, 10, 9].forEach((fi, k) => { s += cell(43, 11 + k * 10, 6, 9, Y(fi)); });
+  // mặt trên 3×3: hàng 0 (phía sau) → hàng 2 (phía trước), cột trái→phải
+  for (let r = 0; r < 3; r++) for (let c = 0; c < 3; c++) s += cell(11 + c * 10, 11 + r * 10, 9, 9, Y(r * 3 + c));
+  return s + '</svg>';
+}
+// Đưa khối về đúng thế OLL n (khung chuẩn của sơ đồ: vàng trên, mặt trước
+// như sơ đồ) như một ván chơi tự do mới — công thức OLL tính theo khung
+// chuẩn này, KHÔNG theo khung vị trí của camera như các thẻ công thức cũ.
+function setupOllCase(n) {
+  hideBanner();
+  mode = 'free';
+  document.querySelectorAll('#modeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.mode === 'free'));
+  document.getElementById('modeName').textContent = 'OLL ' + n + ' — luyện tay';
+  setStickers(ollCaseStickers(n, 0));
+  roundActive = true;
+  updateModeDesc();
+  updateStats();
+  setTab('play');
+  showBanner('<span class="big">📚 OLL ' + n + '</span>Khối đang ở đúng thế OLL ' + n + ' như sơ đồ trong thẻ (mặt vàng ở trên; cầm khối sao cho hình mặt trên khớp sơ đồ, cạnh dưới sơ đồ là mặt trước). Tự làm công thức của thẻ để giải, hoặc bấm “Xem giải”.',
+    false,
+    '<br><button class="btn primary small" onclick="watchOll(' + n + ')">▶ Xem giải</button>' +
+    '<button class="btn small" onclick="hideBanner()">Tự luyện</button>');
+  saveState();
+}
+function watchOll(n) {
+  setupOllCase(n);
+  // Quay công thức theo KHUNG CHUẨN của thế (parseAlgFull trên tọa độ khối),
+  // không qua khung vị trí theo camera — pattern luôn khớp sơ đồ.
+  for (const mv of parseAlgFull(OLL_ALGS[n])) enqueueMove(mv, { dur: 300 });
+}
+window.watchOll = watchOll;
+(function buildOllCards() {
+  const host = document.getElementById('ollGroups');
+  if (!host) return;
+  for (const g of OLL_GROUPS) {
+    const h = document.createElement('h3');
+    h.className = 'oll-group-title';
+    h.textContent = g.name;
+    host.appendChild(h);
+    const grid = document.createElement('div');
+    grid.className = 'oll-grid';
+    for (const n of g.cases) {
+      const card = document.createElement('div');
+      card.className = 'oll-card';
+      const head = document.createElement('div');
+      head.innerHTML = '<span class="oll-num">OLL ' + n + '</span>';
+      card.appendChild(head);
+      const dia = document.createElement('div');
+      dia.innerHTML = ollDiagramSvg(flOf(ollCaseStickers(n, 0)));
+      card.appendChild(dia);
+      const alg = document.createElement('div');
+      alg.innerHTML = algHtml(OLL_ALGS[n]);
+      card.appendChild(alg);
+      const row = document.createElement('div');
+      row.className = 'row';
+      const b1 = document.createElement('button');
+      b1.className = 'btn small oll-act';
+      b1.textContent = '🎯 Luyện thế này';
+      b1.addEventListener('click', () => setupOllCase(n));
+      const b2 = document.createElement('button');
+      b2.className = 'btn primary small oll-act';
+      b2.textContent = '▶ Xem giải';
+      b2.addEventListener('click', () => watchOll(n));
+      row.appendChild(b1); row.appendChild(b2);
+      card.appendChild(row);
+      grid.appendChild(card);
+    }
+    host.appendChild(grid);
+  }
+})();
+
 // keyboard
 document.addEventListener('keydown', e => {
+  if (activeTab !== 'play') return;
   if (e.ctrlKey && (e.key === 'z' || e.key === 'Z')) { e.preventDefault(); document.getElementById('btnUndo').click(); return; }
   const k = e.key.toUpperCase();
   if ('URFDLB'.includes(k) && k.length === 1 && !e.ctrlKey && !e.metaKey) {
