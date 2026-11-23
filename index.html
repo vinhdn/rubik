@@ -215,6 +215,27 @@
       .oll-card .alg { margin-top: 4px; }
       .oll-card .row { display: flex; gap: 6px; margin-top: 9px; }
       .oll-card .row .btn { flex: 1; padding: 4px 2px; }
+      /* Panel công thức đang học / đang luyện — ngay dưới khối */
+      #currentFormulaPanel { display: none; border-color: var(--accent); margin-top: 12px; }
+      #currentFormulaPanel.show { display: block; }
+      body.fs #currentFormulaPanel { display: none !important; }
+      .cf-head { display: flex; align-items: flex-start; gap: 8px; }
+      .cf-head h3 { flex: 1; margin: 2px 0 6px; font-size: 16px; line-height: 1.35; }
+      .cf-close {
+        flex: none; width: 36px; height: 36px; border-radius: 9px; border: 1px solid var(--line);
+        background: var(--surface2); color: var(--ink); font-size: 16px; font-weight: 800; line-height: 1;
+      }
+      .cf-body { display: flex; gap: 12px; align-items: flex-start; flex-wrap: wrap; }
+      .cf-diagram { flex: none; }
+      .cf-diagram .oll-diagram { width: 88px; height: 88px; margin: 0; }
+      .cf-algs { flex: 1; min-width: 200px; display: flex; flex-direction: column; gap: 8px; }
+      .cf-alg-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; }
+      .cf-alg-label { font-weight: 800; font-size: 14px; }
+      .cf-alg .mv { min-width: 34px; padding: 5px 7px; font-size: 17px; border-radius: 8px; }
+      .cf-algs.compact { gap: 5px; }
+      .cf-algs.compact .cf-alg-label { font-size: 13px; font-weight: 700; color: var(--muted); min-width: 168px; }
+      .cf-algs.compact .cf-alg .mv { min-width: 26px; padding: 2px 4px; font-size: 13.5px; border-radius: 6px; }
+      @media (max-width: 480px) { .cf-algs.compact .cf-alg-label { min-width: 0; width: 100%; } }
     </style>
   </head>
   <body>
@@ -243,6 +264,18 @@
             </div>
             <div class="hold-tag" id="holdTag"></div>
             <div class="confetti" id="confetti"></div>
+          </div>
+
+          <div class="panel" id="currentFormulaPanel" aria-live="polite">
+            <div class="cf-head">
+              <h3 id="cfTitle">📐 Công thức đang luyện</h3>
+              <button class="cf-close" id="btnCloseFormula" aria-label="Ẩn panel công thức">✕</button>
+            </div>
+            <div class="cf-body">
+              <div class="cf-diagram" id="cfDiagram"></div>
+              <div class="cf-algs" id="cfAlgs"></div>
+            </div>
+            <div class="hint-note" id="cfNote"></div>
           </div>
 
           <div class="panel demo-card" id="demoCard" aria-live="polite">
@@ -347,6 +380,7 @@
               <li><b>Cài app:</b> bấm nút “📲 Cài app” ở dưới khối để cài trang này như một ứng dụng (mở từ màn hình chính, chơi offline). Nếu nút chưa hiện lời mời cài đặt, mở menu ⋮ của Chrome rồi chọn “Cài đặt ứng dụng” / “Thêm vào màn hình chính”.</li>
               <li>Khi luyện tập, khối chỉ xáo đúng phần cần luyện — các phần đã học xong được giữ nguyên để bạn tập trung vào công thức đang học.</li>
               <li><b>Tab Học OLL:</b> đủ 57 công thức OLL chuẩn quốc tế xếp theo nhóm hình. Mỗi thẻ có sơ đồ thế (nhìn từ trên xuống, cạnh dưới của sơ đồ là mặt trước, ô vàng = ô đang hướng lên mặt trên), nút “Luyện thế này” để đưa khối về đúng thế đó tự giải, và nút “Xem giải” để xem máy quay công thức. Ký hiệu chữ thường (r, l, f…) = xoay 2 lớp cùng lúc: mặt đó cộng lớp giữa kề nó; M = lớp giữa dọc. Chế độ “OLL · Ngẫu nhiên” ở tab Chơi &amp; luyện cho bạn một thế OLL bất kỳ để tự nhận diện và giải.</li>
+              <li><b>Panel công thức đang luyện:</b> khi đang luyện một chế độ ở tab Chơi &amp; luyện (hoặc bấm “Luyện thế này” ở một thẻ OLL), panel ngay dưới khối hiện đúng công thức của bài đang làm — kèm sơ đồ thế với các bài OLL — để khỏi cuộn xuống thẻ công thức hay chuyển tab. Bấm ✕ ở góc panel để ẩn; bắt đầu ván chơi tự do mới thì panel tự tắt.</li>
             </ul>
           </details>
         </div>
@@ -1034,6 +1068,8 @@ function crossEdgesSolved(fl) { // chỉ 4 cạnh của dấu cộng trắng: đ
   return fl[28] === 'D' && fl[30] === 'D' && fl[32] === 'D' && fl[34] === 'D' &&
     fl[25] === 'F' && fl[16] === 'R' && fl[43] === 'L' && fl[52] === 'B';
 }
+let lastF2L1Info = null; // {alg, slot} của bài F2L 1 cặp vừa sinh — panel công thức đang luyện đọc ở đây
+let lastOLLInfo = null;  // {n, rotU} của bài OLL ngẫu nhiên vừa sinh
 function genF2L1(rng) {
   // Dấu cộng trắng + 3 cặp xong sẵn; cặp còn lại nằm ở tầng trên trong một
   // thế cơ bản (chèn sẵn / ghép phải / ghép trước / trắng hướng lên).
@@ -1043,7 +1079,7 @@ function genF2L1(rng) {
     const slot = (rng() * 4) | 0;
     applyAlgAtSlot(st, invertAlgMoves(alg), slot);
     const fl = flOf(st);
-    if (crossEdgesSolved(fl) && !checkF2L(fl) && f2lDisplacedCount(st) === 1) return st;
+    if (crossEdgesSolved(fl) && !checkF2L(fl) && f2lDisplacedCount(st) === 1) { lastF2L1Info = { alg, slot }; return st; }
   }
 }
 function genF2L4(rng) {
@@ -1167,7 +1203,18 @@ function ollCaseStickers(n, rotU) {
 }
 function genOLLPractice(rng) {
   const n = 1 + ((rng() * 57) | 0);
-  return ollCaseStickers(n, (rng() * 4) | 0);
+  const rotU = (rng() * 4) | 0;
+  lastOLLInfo = { n, rotU };
+  return ollCaseStickers(n, rotU);
+}
+// Công thức HIỂN THỊ cho bài OLL ngẫu nhiên: thế đã bị xoay thêm U^rotU
+// sau công thức nghịch, nên dãy giải đúng trong khung chuẩn là U^-rotU
+// rồi mới tới công thức gốc — áp dụng dãy này (parseAlgFull) lên đúng thế
+// đã sinh sẽ giải trọn khối, không chỉ đạt mục tiêu hướng.
+function ollPracticeDisplayAlg(n, rotU) {
+  const r = ((rotU || 0) % 4 + 4) % 4;
+  const prefix = r === 1 ? "U'" : r === 2 ? 'U2' : r === 3 ? 'U' : '';
+  return (prefix ? prefix + ' ' : '') + OLL_ALGS[n];
 }
 function checkLLOriented(fl) { // cả 9 ô mặt trên đều vàng ⇔ mọi viên tầng cuối đã đúng hướng
   for (let i = 0; i < 9; i++) if (fl[i] !== 'U') return false;
@@ -1244,7 +1291,9 @@ if (typeof module !== 'undefined') Object.assign(module.exports, {
   mulberry32, genLayer2, genCross, genEdges, genCorners, genFlip, genFreeScramble,
   genSune, genAA, genUA, AA_ALG, UA_ALG, genF2L1, genF2L4,
   goalFor, detectStage, flOf, checkBottom, checkF2L, checkYellowCross, checkEdgesAligned, checkCornersInPlace, checkSolvedNorm, checkCornersOriented,
-  parseAlgFull, invertAlgFull, expandTokenFull, OLL_ALGS, OLL_GROUPS, ollCaseStickers, genOLLPractice, checkLLOriented
+  parseAlgFull, invertAlgFull, expandTokenFull, OLL_ALGS, OLL_GROUPS, ollCaseStickers, genOLLPractice, checkLLOriented,
+  ollPracticeDisplayAlg, applyAlgTo, applyMovesTo, applyAlgAtSlot, parseAlg,
+  getLastF2L1Info: () => lastF2L1Info, getLastOLLInfo: () => lastOLLInfo
 });
 
 </script>
@@ -1425,6 +1474,7 @@ const DEFAULT_VIEW = { yaw: -0.62, pitch: 0.52, scale: 1 };
 let holdHL = null;         // {axis, layer} of the layer currently held for a swipe
 let dragRot = null;        // {axis, layer, angle} live finger-follow rotation while dragging a layer
 let moveLog = [];          // notations of the user's moves this round, mirrors undo history
+let currentFormula = null; // panel "công thức đang luyện": {kind,title,note,compact,ollNum,ollRotU,algs:[{label,alg}]} hoặc null (chơi tự do / đã đóng)
 
 const cv = document.getElementById('cv');
 const ctx = cv.getContext('2d');
@@ -1677,6 +1727,7 @@ function saveState() {
       roundDone: roundDone,
       timerElapsed: elapsedMs(),
       timerRunning: !!timerStart && roundActive && !roundDone,
+      currentFormula: currentFormula,
       view: { yaw: view.yaw, pitch: view.pitch, scale: view.scale },
       // Khung mặt theo vị trí tại lúc lưu (suy ra lại được từ góc nhìn khi
       // khôi phục, lưu kèm để đối chiếu / tương thích về sau).
@@ -1716,8 +1767,10 @@ function restoreSavedState() {
       view = { yaw: data.view.yaw, pitch: data.view.pitch, scale: data.view.scale };
     }
     refreshFrame(true); // khung mặt suy lại từ góc nhìn vừa khôi phục — không lệch khung
+    currentFormula = validFormulaCtx(data.currentFormula); // panel công thức đang luyện khôi phục cùng ván (save cũ không có trường này thì ẩn)
+    renderCurrentFormula();
     document.querySelectorAll('#modeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.mode === mode));
-    document.getElementById('modeName').textContent = MODES[mode].name;
+    document.getElementById('modeName').textContent = (currentFormula && currentFormula.kind === 'oll-case' && currentFormula.ollNum) ? ('OLL ' + currentFormula.ollNum + ' — luyện tay') : MODES[mode].name;
     updateModeDesc();
     renderLog();
     render();
@@ -1810,6 +1863,10 @@ function startRound(m) {
   else st = genFlip(rng);
   setStickers(st);
   roundActive = true;
+  // Panel công thức đang luyện: chế độ luyện nào cũng có ngữ cảnh riêng
+  // (F2L 1 cặp / OLL ngẫu nhiên lấy đúng bài generator vừa sinh); chơi tự
+  // do thì xoá panel. "Áp dụng thử" ở các thẻ KHÔNG đụng vào panel này.
+  setCurrentFormula(formulaCtxForMode(m));
   updateModeDesc();
   updateStats();
   saveState(); // a new round / reshuffle overwrites the previously saved game
@@ -1833,6 +1890,93 @@ function updateModeDesc() {
 function algHtml(str) {
   return '<span class="alg">' + str.trim().split(/\s+/).map(t => '<span class="mv">' + t.replace(/'/g, '′') + '</span>').join('') + '</span>';
 }
+
+// ---------- Panel công thức đang học / đang luyện (ngay dưới khối) ----------
+// currentFormula là dữ liệu THUẦN (title / algs / ollNum / ollRotU) nên
+// lưu thẳng vào save localStorage và khôi phục nguyên vẹn sau reload.
+// Khung hiển thị: OLL dùng KHUNG CHUẨN của sơ đồ (parseAlgFull trên tọa
+// độ khối, như thẻ OLL); các công thức còn lại dùng khung vị trí như thẻ
+// công thức tương ứng (parseAlgSpatial khi bấm Áp dụng thử ở thẻ).
+function ollGroupName(n) {
+  const g = OLL_GROUPS.find(x => x.cases.includes(n));
+  return g ? g.name : '';
+}
+function validFormulaCtx(c) {
+  if (!c || typeof c !== 'object') return null;
+  if (typeof c.title !== 'string' || !c.title) return null;
+  if (!Array.isArray(c.algs) || !c.algs.length) return null;
+  for (const a of c.algs) { if (!a || typeof a.alg !== 'string' || !a.alg.trim()) return null; }
+  const out = {
+    kind: typeof c.kind === 'string' ? c.kind : 'mode',
+    title: c.title,
+    note: typeof c.note === 'string' ? c.note : '',
+    compact: !!c.compact,
+    ollNum: (Number.isInteger(c.ollNum) && c.ollNum >= 1 && c.ollNum <= 57) ? c.ollNum : null,
+    ollRotU: Number.isInteger(c.ollRotU) ? ((c.ollRotU % 4) + 4) % 4 : 0,
+    slot: Number.isInteger(c.slot) ? c.slot : null,
+    algs: c.algs.map(a => ({ label: typeof a.label === 'string' ? a.label : '', alg: a.alg }))
+  };
+  return out;
+}
+function renderCurrentFormula() {
+  const panel = document.getElementById('currentFormulaPanel');
+  if (!panel) return;
+  const cf = validFormulaCtx(currentFormula);
+  if (!cf) { panel.classList.remove('show'); return; }
+  document.getElementById('cfTitle').textContent = '📐 ' + cf.title;
+  const dia = document.getElementById('cfDiagram');
+  if (cf.ollNum) {
+    dia.style.display = '';
+    dia.innerHTML = ollDiagramSvg(flOf(ollCaseStickers(cf.ollNum, cf.ollRotU)));
+  } else { dia.style.display = 'none'; dia.innerHTML = ''; }
+  const box = document.getElementById('cfAlgs');
+  box.className = 'cf-algs' + (cf.compact ? ' compact' : '');
+  box.innerHTML = cf.algs.map(a =>
+    '<div class="cf-alg-row">' + (a.label ? '<span class="cf-alg-label">' + a.label + '</span>' : '') +
+    '<span class="alg cf-alg">' + a.alg.trim().split(/\s+/).map(t => '<span class="mv">' + t.replace(/'/g, '′') + '</span>').join('') + '</span></div>'
+  ).join('');
+  const note = document.getElementById('cfNote');
+  note.textContent = cf.note || '';
+  note.style.display = cf.note ? '' : 'none';
+  panel.classList.add('show');
+}
+function setCurrentFormula(cf) { currentFormula = validFormulaCtx(cf); renderCurrentFormula(); }
+function clearCurrentFormula(save) {
+  currentFormula = null;
+  renderCurrentFormula();
+  if (save) saveState(); // đóng panel là xoá luôn ngữ cảnh đã lưu
+}
+// Ngữ cảnh panel cho từng chế độ luyện — gọi trong startRound SAU khi
+// generator đã sinh bài (genF2L1 / genOLLPractice ghi last*Info).
+function formulaCtxForMode(m) {
+  const SPATIAL_NOTE = 'Chữ cái tính theo vị trí đang cầm khối như mô tả của bước (mặt trước hướng về bạn) — giống hệt thẻ công thức của bước này.';
+  const CANON_NOTE = 'Khung chuẩn của sơ đồ: mặt vàng ở trên, cạnh dưới của sơ đồ là mặt trước — cầm khối khớp sơ đồ rồi làm công thức, không theo khung camera.';
+  if (m === 'free') return null;
+  if (m === 'layer2') return { kind: 'mode', title: MODES.layer2.name, note: SPATIAL_NOTE, algs: [{ label: 'Chèn phải', alg: "U R U' R' U' F' U F" }, { label: 'Chèn trái', alg: "U' L' U L U F U' F'" }] };
+  if (m === 'cross') return { kind: 'mode', title: MODES.cross.name, note: SPATIAL_NOTE, algs: [{ alg: "F R U R' U' F'" }] };
+  if (m === 'edges') return { kind: 'mode', title: MODES.edges.name, note: SPATIAL_NOTE, algs: [{ alg: "R U R' U R U2 R' U" }] };
+  if (m === 'corners') return { kind: 'mode', title: MODES.corners.name, note: SPATIAL_NOTE, algs: [{ alg: "U R U' L' U R' U' L" }] };
+  if (m === 'flip') return { kind: 'mode', title: MODES.flip.name, note: SPATIAL_NOTE, algs: [{ label: 'Lặp ×2 hoặc ×4 cho mỗi góc', alg: "R' D' R D" }] };
+  if (m === 'sune') return { kind: 'mode', title: MODES.sune.name, note: SPATIAL_NOTE, algs: [{ label: 'Sune', alg: "R U R' U R U2 R'" }, { label: 'Antisune', alg: "L' U' L U' L' U2 L" }] };
+  if (m === 'aa') return { kind: 'mode', title: MODES.aa.name, note: SPATIAL_NOTE, algs: [{ label: 'AA', alg: AA_ALG }] };
+  if (m === 'ua') return { kind: 'mode', title: MODES.ua.name, note: SPATIAL_NOTE, algs: [{ label: 'UA', alg: UA_ALG }] };
+  if (m === 'f2l1') {
+    const info = lastF2L1Info;
+    if (!info) return null;
+    const entry = FORMULAS_F2L.find(f => f.alg === info.alg) || { t: 'F2L · Luyện 1 cặp' };
+    const slotNames = ['trước–phải', 'sau–phải', 'sau–trái', 'trước–trái'];
+    return { kind: 'f2l1', title: entry.t, slot: info.slot, note: 'Cặp đang luyện thuộc khe ' + slotNames[info.slot] + ': giữ mặt trắng ở dưới, xoay cả khối đưa khe đó về trước–phải rồi làm công thức (khe chuẩn của thẻ F2L).', algs: [{ alg: info.alg }] };
+  }
+  if (m === 'f2l4') return { kind: 'mode', title: MODES.f2l4.name, note: 'Khe chuẩn là trước–phải (riêng chèn trái dùng khe trước–trái), mặt trắng ở dưới — giống thẻ F2L cơ bản.', compact: true, algs: FORMULAS_F2L.map(f => ({ label: f.t, alg: f.alg })) };
+  if (m === 'oll') {
+    const info = lastOLLInfo;
+    if (!info) return null;
+    const disp = ollPracticeDisplayAlg(info.n, info.rotU);
+    return { kind: 'oll-random', title: 'OLL ' + info.n + ' — ' + ollGroupName(info.n), ollNum: info.n, ollRotU: info.rotU, note: CANON_NOTE + (info.rotU ? ' Thế ngẫu nhiên này đã xoay U thêm ' + info.rotU + ' lần so với thế chuẩn nên công thức dưới đây đã gồm sẵn nước U mở đầu để đưa về thế chuẩn — cứ làm thẳng từ đầu, sơ đồ bên cạnh là đúng thế đang trên khối.' : ''), algs: [{ alg: disp }] };
+  }
+  return null;
+}
+window.__currentFormulaInfo = function () { return currentFormula ? JSON.parse(JSON.stringify(currentFormula)) : null; };
 
 // ---------- pointer interaction ----------
 let drag = null;
@@ -2410,6 +2554,8 @@ document.querySelectorAll('.demo-speed-btn').forEach(b => b.addEventListener('cl
   renderDemoSpeed();
 }));
 
+document.getElementById('btnCloseFormula').addEventListener('click', () => clearCurrentFormula(true));
+
 // ---------- controls wiring ----------
 document.getElementById('btnCopyLog').addEventListener('click', () => {
   const note = document.getElementById('copyNote');
@@ -2451,6 +2597,7 @@ document.getElementById('btnRedo').addEventListener('click', () => {
 document.getElementById('btnScramble').addEventListener('click', () => startRound('free'));
 document.getElementById('btnReset').addEventListener('click', () => {
   hideBanner(); roundActive = false; mode = mode; setStickers(solvedStickers());
+  clearCurrentFormula(false); // giải lại về khối đã giải: không còn ngữ cảnh luyện nào nữa
   document.getElementById('modeName').textContent = MODES[mode].name + ' — đã giải';
   updateStats();
   saveState();
@@ -2671,6 +2818,7 @@ function setupOllCase(n) {
   document.querySelectorAll('#modeChips .chip').forEach(ch => ch.classList.toggle('on', ch.dataset.mode === 'free'));
   document.getElementById('modeName').textContent = 'OLL ' + n + ' — luyện tay';
   setStickers(ollCaseStickers(n, 0));
+  setCurrentFormula({ kind: 'oll-case', title: 'OLL ' + n + ' — ' + ollGroupName(n), ollNum: n, ollRotU: 0, note: 'Khung chuẩn của sơ đồ: mặt vàng ở trên, cạnh dưới của sơ đồ là mặt trước — cầm khối khớp sơ đồ rồi làm công thức, không theo khung camera.', algs: [{ alg: OLL_ALGS[n] }] });
   roundActive = true;
   updateModeDesc();
   updateStats();
