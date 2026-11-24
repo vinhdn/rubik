@@ -176,10 +176,14 @@
       .formula-card .fc-top { display: flex; gap: 12px; align-items: flex-start; }
       .formula-card .fc-dia { flex: none; }
       .formula-card .fc-dia .oll-diagram { width: 92px; height: 92px; margin: 0; }
+      /* Hình khối 3D tĩnh trên thẻ công thức (F2L + tầng 3): cùng kích thước
+         và vị trí như sơ đồ phẳng cũ, vẽ bằng cùng phép chiếu/màu như khối chính */
+      .cube3d-diagram { display: block; width: 96px; height: 96px; margin: 0; }
+      .formula-card .fc-dia .cube3d-diagram { width: 92px; height: 92px; }
       .formula-card .fc-txt { flex: 1; min-width: 0; }
       .formula-card .fc-alg-block { display: flex; gap: 12px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
       .formula-card .fc-alg-col { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1; min-width: 170px; }
-      @media (max-width: 420px) { .formula-card .fc-dia .oll-diagram { width: 78px; height: 78px; } }
+      @media (max-width: 420px) { .formula-card .fc-dia .oll-diagram { width: 78px; height: 78px; } .formula-card .fc-dia .cube3d-diagram { width: 78px; height: 78px; } }
       details.help { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 6px 14px 12px; box-shadow: var(--shadow); }
       details.help summary { min-height: 40px; display: flex; align-items: center; font-weight: 800; cursor: pointer; }
       details.help p, details.help li { font-size: 14px; line-height: 1.55; color: var(--ink); }
@@ -2699,39 +2703,104 @@ afterMoveCommitted = function () {
     box.appendChild(b);
   }
 })();
-// ---------- Sơ đồ thế cho thẻ công thức (cùng kiểu + cùng cách dựng như thẻ OLL) ----------
-// Mọi sơ đồ đều VẼ TỪ TRẠNG THÁI THẬT dựng bằng mô hình khối của trang —
-// thế = khối đã giải + áp dụng công thức NGHỊCH trong khung chuẩn của
-// công thức (vàng trên, trắng dưới, mặt trước như mô tả của thẻ) — nên sơ
-// đồ luôn khớp công thức: áp dụng công thức lên đúng thế trong sơ đồ thì
-// đạt kết quả thẻ mô tả (đã kiểm chứng bằng mô phỏng cho từng thẻ).
-function caseDiagramHtml(alg) {
+// ---------- Hình thế cho thẻ công thức F2L + tầng 3: khối 3D tĩnh ----------
+// TRẠNG THÁI của mỗi thế KHÔNG đổi so với bản sơ đồ phẳng trước đây: cả
+// hai cách vẽ dùng CHUNG một hàm dựng trạng thái getCaseStickers() dưới
+// đây — thế = khối đã giải + áp dụng công thức NGHỊCH trong khung chuẩn
+// của công thức (vàng trên, trắng dưới, mặt trước như mô tả của thẻ) —
+// nên hình luôn khớp công thức: áp dụng công thức lên đúng thế trong
+// hình thì đạt kết quả thẻ mô tả (đã kiểm chứng bằng mô phỏng cho từng
+// thẻ). Chỉ CÁCH VẼ đổi: từ sơ đồ phẳng nhìn từ trên xuống sang khối 3D
+// tĩnh ở góc nhìn cố định thấy 3 mặt Trên–Trước–Phải (đúng khung chuẩn
+// của công thức: mặt "trước" của công thức hiện ở mặt trước, "phải" ở
+// bên phải), dùng cùng phép chiếu, cùng màu ô và cùng kiểu viền/nhựa đen
+// như khối chính của trang. (Tab Học OLL và panel "Công thức đang
+// luyện" vẫn giữ sơ đồ phẳng như cũ — không thuộc phạm vi đổi này.)
+function getCaseStickers(kind, alg) {
   const st = solvedStickers();
+  if (kind === 'flip') {
+    // Bước lật góc (phương pháp cũ): thế thuần chỉ xoắn góc làm việc
+    // trước–phải–trên, ô vàng nằm ở mặt phải — đúng hướng xoắn mà nhóm
+    // (R' D' R D)×4 tạo ra ở góc đó trên khối đã giải. Nhóm ×4 còn làm
+    // rối tạm tầng dưới nên thế vẽ được dựng thuần ở mức cubie: chỉ 3 ô
+    // của góc làm việc đổi hướng, mọi viên khác nguyên trạng thái đã giải.
+    twistCornerAt(st, [1, 1, 1], 1);
+    return st;
+  }
+  if (kind === 'stuck') {
+    // F2L "Lôi cặp ra khỏi khe": thế có nghĩa của nó là cặp đang KẸT
+    // trong khe trước–phải — góc nằm đúng khe nhưng bị xoắn, ô trắng
+    // quay ra mặt trước, mọi thứ còn lại đã giải. Dựng thuần ở mức
+    // cubie: xoay vòng 3 hướng của góc ở khe (1,-1,1) để ô trắng đi từ
+    // mặt dưới ra mặt trước.
+    const grp = cubieGroups(st).get('1,-1,1');
+    const remap = { '0,-1,0': [0, 0, 1], '0,0,1': [1, 0, 0], '1,0,0': [0, -1, 0] };
+    if (grp) for (const s of grp) { const nn = remap[s.n.join(',')]; if (nn) s.n = nn.slice(); }
+    return st;
+  }
   applyMovesTo(st, invertAlgMoves(alg));
-  return ollDiagramSvg(flOf(st));
+  return st;
 }
-// Bước lật góc (phương pháp cũ): thế thuần chỉ xoắn góc làm việc
-// trước–phải–trên, ô vàng nằm ở mặt phải — đúng hướng xoắn mà nhóm
-// (R' D' R D)×4 tạo ra ở góc đó trên khối đã giải. Nhóm ×4 còn làm rối
-// tạm tầng dưới nên thế vẽ được dựng thuần ở mức cubie: chỉ 3 ô của góc
-// làm việc đổi hướng, mọi viên khác nguyên trạng thái đã giải.
-function flipCaseDiagramHtml() {
-  const st = solvedStickers();
-  twistCornerAt(st, [1, 1, 1], 1);
-  return ollDiagramSvg(flOf(st));
+// Cách vẽ phẳng cũ — giữ lại để đối chứng trạng thái (và tab OLL vẫn
+// dùng ollDiagramSvg trực tiếp như trước).
+function caseDiagramHtml(alg) { return ollDiagramSvg(flOf(getCaseStickers('inv', alg))); }
+function flipCaseDiagramHtml() { return ollDiagramSvg(flOf(getCaseStickers('flip'))); }
+function stuckCaseDiagramHtml() { return ollDiagramSvg(flOf(getCaseStickers('stuck'))); }
+// Kiểm chứng ngay trong code: trạng thái đưa vào bộ vẽ 3D phải GIỐNG HỆT
+// từng byte với trạng thái mà cách vẽ phẳng cũ dùng (dựng lại tươi bằng
+// cùng hàm dựng + so cả dãy sticker lẫn mặt phẳng suy ra). Lệch là báo
+// lỗi console ngay, không âm thầm vẽ sai thế.
+function diagramStateKey(st) { return JSON.stringify(st.map(s => [s.p, s.n, s.c])); }
+function assertDiagramState(label, st, kind, alg) {
+  const legacy = getCaseStickers(kind, alg);
+  const same = diagramStateKey(st) === diagramStateKey(legacy) &&
+    JSON.stringify(flOf(st)) === JSON.stringify(flOf(legacy));
+  console.assert(same, '[hình 3D thẻ công thức] trạng thái khác bản phẳng cũ:', label);
+  if (!same) console.error('[hình 3D thẻ công thức] TRẠNG THÁI LỆCH so với bản phẳng cũ:', label);
+  return st;
 }
-// F2L "Lôi cặp ra khỏi khe": thế có nghĩa của nó là cặp đang KẸT trong
-// khe trước–phải — góc nằm đúng khe nhưng bị xoắn, ô trắng quay ra mặt
-// trước, mọi thứ còn lại đã giải (cặp không ở tầng trên nên mặt trên
-// trong sơ đồ vẫn vàng hết). Dựng thuần ở mức cubie: xoay vòng 3 hướng
-// của góc ở khe (1,-1,1) để ô trắng đi từ mặt dưới ra mặt trước.
-function stuckCaseDiagramHtml() {
-  const st = solvedStickers();
-  const grp = cubieGroups(st).get('1,-1,1');
-  const remap = { '0,-1,0': [0, 0, 1], '0,0,1': [1, 0, 0], '1,0,0': [0, -1, 0] };
-  if (grp) for (const s of grp) { const nn = remap[s.n.join(',')]; if (nn) s.n = nn.slice(); }
-  return ollDiagramSvg(flOf(st));
+// Bộ vẽ khối 3D tĩnh: cùng công thức chiếu như render() của khối chính
+// (viewRot = Ry(yaw) rồi Rx(pitch); ẩn mặt khuất khi hướng mặt đã chiếu
+// có z < 0.12; sắp xếp theo độ sâu; thân nhựa đen #14161a to hơn ô màu)
+// nhưng ở góc nhìn CỐ ĐỊNH = DEFAULT_VIEW (yaw −0.62, pitch 0.52) — góc
+// nhìn cho thấy đúng 3 mặt U (trên), F (trước), R (phải) của khung
+// chuẩn, không tương tác, không phụ thuộc góc camera hiện tại của khối
+// chính.
+function cube3dSvg(st) {
+  const S = 15.2, CX = 48, CY = 47;
+  const vr = v => rot3(rot3(v, 1, DEFAULT_VIEW.yaw), 0, DEFAULT_VIEW.pitch);
+  const proj = q => { const p = vr(q); return [CX + p[0] * S, CY - p[1] * S, p[2]]; };
+  const faces = [];
+  for (const grp of cubieGroups(st).values()) {
+    const cr = grp[0].p;
+    for (const s of grp) {
+      const nv = vr(s.n);
+      if (nv[2] < 0.12) continue; // mặt khuất (sau / trái / dưới ở góc nhìn này)
+      const others = [0, 1, 2].filter(a => Math.abs(s.n[a]) < 0.5);
+      const t1 = [0, 0, 0], t2 = [0, 0, 0];
+      t1[others[0]] = 1; t2[others[1]] = 1;
+      const polyOf = (half, off) => [[-1, -1], [1, -1], [1, 1], [-1, 1]].map(([a, b]) => proj([
+        cr[0] + (t1[0] * a + t2[0] * b) * half + s.n[0] * off,
+        cr[1] + (t1[1] * a + t2[1] * b) * half + s.n[1] * off,
+        cr[2] + (t1[2] * a + t2[2] * b) * half + s.n[2] * off
+      ]));
+      const bodyPts = polyOf(0.5, 0.5), stPts = polyOf(0.435, 0.505);
+      const depth = proj([cr[0] + s.n[0] * 0.5, cr[1] + s.n[1] * 0.5, cr[2] + s.n[2] * 0.5])[2];
+      faces.push({ bodyPts, stPts, color: FACE_COLORS[s.c], depth });
+    }
+  }
+  faces.sort((a, b) => a.depth - b.depth);
+  const pts = ps => ps.map(p => p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  let s = '<svg class="cube3d-diagram" viewBox="0 0 96 96" role="img" aria-label="Hình khối 3D của thế: nhìn từ trước–phải–trên, thấy mặt trên, mặt trước và mặt phải">';
+  for (const f of faces) {
+    s += '<polygon points="' + pts(f.bodyPts) + '" fill="#14161a"/>';
+    s += '<polygon points="' + pts(f.stPts) + '" fill="' + f.color + '" stroke="rgba(0,0,0,.28)" stroke-width="0.7"/>';
+  }
+  return s + '</svg>';
 }
+function caseDiagram3dHtml(alg) { return cube3dSvg(assertDiagramState('inv:' + alg, getCaseStickers('inv', alg), 'inv', alg)); }
+function flipCaseDiagram3dHtml() { return cube3dSvg(assertDiagramState('flip', getCaseStickers('flip'), 'flip')); }
+function stuckCaseDiagram3dHtml() { return cube3dSvg(assertDiagramState('stuck', getCaseStickers('stuck'), 'stuck')); }
 function formulaCardHead(fc, diagramHtml) {
   const head = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
   if (!diagramHtml) return head;
@@ -2743,9 +2812,10 @@ function formulaCardHead(fc, diagramHtml) {
   for (const fc of FORMULAS) {
     const card = document.createElement('div');
     card.className = 'formula-card';
-    // 4 bước tầng 3 có sơ đồ thế (2 thẻ tầng 2 ở đầu danh sách thì không):
-    // 'inv' = thế nghịch của công thức, 'flip' = thế góc xoắn thuần.
-    const dia = fc.dia === 'flip' ? flipCaseDiagramHtml() : fc.dia === 'inv' ? caseDiagramHtml(fc.alg) : '';
+    // 4 bước tầng 3 có hình khối 3D của thế (2 thẻ tầng 2 ở đầu danh sách
+    // thì không): 'inv' = thế nghịch của công thức, 'flip' = thế góc
+    // xoắn thuần.
+    const dia = fc.dia === 'flip' ? flipCaseDiagram3dHtml() : fc.dia === 'inv' ? caseDiagram3dHtml(fc.alg) : '';
     card.innerHTML = formulaCardHead(fc, dia);
     const row = document.createElement('div');
     row.className = 'row';
@@ -2787,15 +2857,15 @@ function formulaCardHead(fc, diagramHtml) {
     card.className = 'formula-card';
     if (fc.algs.length > 1) {
       // Bước có 2 công thức (Sune / Antisune): mỗi công thức một khối
-      // riêng — sơ đồ thế cá / cá gương nằm ngay cạnh công thức và nút
-      // áp dụng thử của chính nó.
+      // riêng — hình khối 3D của thế cá / cá gương nằm ngay cạnh công
+      // thức và nút áp dụng thử của chính nó.
       card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
       for (const a of fc.algs) {
         const block = document.createElement('div');
         block.className = 'fc-alg-block';
         const dia = document.createElement('div');
         dia.className = 'fc-dia';
-        dia.innerHTML = caseDiagramHtml(a.alg);
+        dia.innerHTML = caseDiagram3dHtml(a.alg);
         const col = document.createElement('div');
         col.className = 'fc-alg-col';
         const alg = document.createElement('span');
@@ -2805,7 +2875,7 @@ function formulaCardHead(fc, diagramHtml) {
         card.appendChild(block);
       }
     } else {
-      card.innerHTML = formulaCardHead(fc, caseDiagramHtml(fc.algs[0].alg));
+      card.innerHTML = formulaCardHead(fc, caseDiagram3dHtml(fc.algs[0].alg));
       const row = document.createElement('div');
       row.className = 'row';
       const alg = document.createElement('span');
@@ -2824,9 +2894,10 @@ function formulaCardHead(fc, diagramHtml) {
   for (const fc of FORMULAS_F2L) {
     const card = document.createElement('div');
     card.className = 'formula-card';
-    // Sơ đồ thế từ công thức nghịch; riêng "Lôi cặp ra" dùng thế cặp kẹt
-    // trong khe (góc xoắn, trắng hướng mặt trước) dựng ở mức cubie.
-    card.innerHTML = formulaCardHead(fc, fc.dia === 'stuck' ? stuckCaseDiagramHtml() : caseDiagramHtml(fc.alg));
+    // Hình khối 3D của thế từ công thức nghịch; riêng "Lôi cặp ra" dùng
+    // thế cặp kẹt trong khe (góc xoắn, trắng hướng mặt trước) dựng ở
+    // mức cubie.
+    card.innerHTML = formulaCardHead(fc, fc.dia === 'stuck' ? stuckCaseDiagram3dHtml() : caseDiagram3dHtml(fc.alg));
     const row = document.createElement('div');
     row.className = 'row';
     const alg = document.createElement('span');
