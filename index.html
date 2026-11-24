@@ -172,6 +172,14 @@
       .formula-card .t { font-weight: 800; font-size: 15px; }
       .formula-card .d { font-size: 13.5px; color: var(--muted); line-height: 1.5; margin-top: 3px; }
       .formula-card .row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 7px; }
+      /* Sơ đồ thế trên thẻ công thức (cùng kiểu sơ đồ OLL): nằm cạnh chữ */
+      .formula-card .fc-top { display: flex; gap: 12px; align-items: flex-start; }
+      .formula-card .fc-dia { flex: none; }
+      .formula-card .fc-dia .oll-diagram { width: 92px; height: 92px; margin: 0; }
+      .formula-card .fc-txt { flex: 1; min-width: 0; }
+      .formula-card .fc-alg-block { display: flex; gap: 12px; align-items: center; margin-top: 10px; flex-wrap: wrap; }
+      .formula-card .fc-alg-col { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; flex: 1; min-width: 170px; }
+      @media (max-width: 420px) { .formula-card .fc-dia .oll-diagram { width: 78px; height: 78px; } }
       details.help { margin-top: 12px; background: var(--surface); border: 1px solid var(--line); border-radius: 16px; padding: 6px 14px 12px; box-shadow: var(--shadow); }
       details.help summary { min-height: 40px; display: flex; align-items: center; font-weight: 800; cursor: pointer; }
       details.help p, details.help li { font-size: 14px; line-height: 1.55; color: var(--ink); }
@@ -1424,10 +1432,10 @@ const MODES = {
 const FORMULAS = [
   { t: 'Tầng 2 — Chèn cạnh sang PHẢI', alg: "U R U' R' U' F' U F", d: 'Cạnh cần chèn đang ở tầng trên, màu mặt trước khớp tâm mặt trước. Đưa cạnh lên trên–phải rồi chèn xuống khe phải.' },
   { t: 'Tầng 2 — Chèn cạnh sang TRÁI', alg: "U' L' U L U F U' F'", d: 'Đối xứng với chèn phải: cạnh khớp tâm mặt trước, chèn xuống khe trái.' },
-  { t: 'Bước 1 — Dấu cộng vàng', alg: "F R U R' U' F'", d: 'Nhịp đọc: Trước – Phải – Lên – Phải xuống – Lên về – Trước về. Làm 1–3 lần: chấm → chữ L (để L ở trên–trái) → vạch ngang → dấu cộng.' },
-  { t: 'Bước 2 — Đưa 4 cạnh đúng tâm', alg: "R U R' U R U2 R' U", d: 'Có U ở cuối! 2 cạnh đúng kề nhau để ở SAU + PHẢI, công thức chỉ tráo 2 cạnh sai ở trước + trái. Nhớ theo khúc: (R U R′ U) + (R U2 R′) + U.' },
-  { t: 'Bước 3 — Đưa 4 góc đúng vị trí', alg: "U R U' L' U R' U' L", d: 'Góc đã đúng để ở TRƯỚC–PHẢI–TRÊN. Công thức là 2 tay làm đối xứng nhau — học theo tay dễ hơn học chữ. Chưa có góc đúng thì làm 1 lần ở vị trí bất kỳ.' },
-  { t: 'Bước 4 — Lật góc', alg: "R' D' R D", d: 'Ngắn nhất nhưng hay quên nhất: Xuống – Trái – Lên – Phải. Lặp 2 hoặc 4 vòng cho 1 góc đến khi vàng ngửa lên, xong chỉ xoay U sang góc tiếp theo.' }
+  { t: 'Bước 1 — Dấu cộng vàng', alg: "F R U R' U' F'", dia: 'inv', d: 'Nhịp đọc: Trước – Phải – Lên – Phải xuống – Lên về – Trước về. Làm 1–3 lần: chấm → chữ L (để L ở trên–trái) → vạch ngang → dấu cộng.' },
+  { t: 'Bước 2 — Đưa 4 cạnh đúng tâm', alg: "R U R' U R U2 R' U", dia: 'inv', d: 'Có U ở cuối! 2 cạnh đúng kề nhau để ở SAU + PHẢI, công thức chỉ tráo 2 cạnh sai ở trước + trái. Nhớ theo khúc: (R U R′ U) + (R U2 R′) + U.' },
+  { t: 'Bước 3 — Đưa 4 góc đúng vị trí', alg: "U R U' L' U R' U' L", dia: 'inv', d: 'Góc đã đúng để ở TRƯỚC–PHẢI–TRÊN. Công thức là 2 tay làm đối xứng nhau — học theo tay dễ hơn học chữ. Chưa có góc đúng thì làm 1 lần ở vị trí bất kỳ.' },
+  { t: 'Bước 4 — Lật góc', alg: "R' D' R D", dia: 'flip', d: 'Ngắn nhất nhưng hay quên nhất: Xuống – Trái – Lên – Phải. Lặp 2 hoặc 4 vòng cho 1 góc đến khi vàng ngửa lên, xong chỉ xoay U sang góc tiếp theo.' }
 ];
 // Thẻ phương pháp tầng 3 MỚI: thứ tự lật hướng TRƯỚC, xếp vị trí SAU — làm
 // được vì AA/UA là tráo vòng thuần, giữ nguyên hướng 100%. Không có nước D.
@@ -1446,7 +1454,7 @@ const FORMULAS_F2L = [
   { t: 'Ghép + chèn — trắng hướng trước', alg: "F' U' F", d: 'Góc ở ngay trên khe, ô trắng hướng về mặt trước; cạnh đang ở vị trí trái (UL) và ô trên của cạnh là màu của mặt phải.' },
   { t: 'Trắng hướng lên', alg: "R U2 R' U' R U R'", d: 'Ô trắng của góc ngửa lên trên; cạnh nằm ngay bên phải góc (UR) và ô trên của cạnh là màu của mặt trước.' },
   { t: 'Góc kẹt trong khe — trắng hướng trước', alg: "R U' R' U R U' R'", d: 'Góc đang nằm sẵn trong khe trước–phải nhưng sai hướng (ô trắng hướng ra mặt trước); cạnh ở UR, ô trên của cạnh là màu mặt trước. Công thức lôi góc ra, ghép cặp rồi chèn lại cho đúng.' },
-  { t: 'Lôi cặp ra khỏi khe', alg: "R U R'", d: 'Khi cặp bị kẹt sai trong khe (sai hướng hoặc nhầm cặp): lôi cả cặp lên tầng trên để xử lý lại từ đầu.' }
+  { t: 'Lôi cặp ra khỏi khe', alg: "R U R'", dia: 'stuck', d: 'Khi cặp bị kẹt sai trong khe (sai hướng hoặc nhầm cặp): lôi cả cặp lên tầng trên để xử lý lại từ đầu.' }
 ];
 const STAGE_TEXT = [
   'Bạn đang ở: <b>Tầng 1</b> — làm dấu cộng trắng và 4 góc trắng (mặt trắng ở dưới, vàng ở trên).',
@@ -2691,13 +2699,54 @@ afterMoveCommitted = function () {
     box.appendChild(b);
   }
 })();
+// ---------- Sơ đồ thế cho thẻ công thức (cùng kiểu + cùng cách dựng như thẻ OLL) ----------
+// Mọi sơ đồ đều VẼ TỪ TRẠNG THÁI THẬT dựng bằng mô hình khối của trang —
+// thế = khối đã giải + áp dụng công thức NGHỊCH trong khung chuẩn của
+// công thức (vàng trên, trắng dưới, mặt trước như mô tả của thẻ) — nên sơ
+// đồ luôn khớp công thức: áp dụng công thức lên đúng thế trong sơ đồ thì
+// đạt kết quả thẻ mô tả (đã kiểm chứng bằng mô phỏng cho từng thẻ).
+function caseDiagramHtml(alg) {
+  const st = solvedStickers();
+  applyMovesTo(st, invertAlgMoves(alg));
+  return ollDiagramSvg(flOf(st));
+}
+// Bước lật góc (phương pháp cũ): thế thuần chỉ xoắn góc làm việc
+// trước–phải–trên, ô vàng nằm ở mặt phải — đúng hướng xoắn mà nhóm
+// (R' D' R D)×4 tạo ra ở góc đó trên khối đã giải. Nhóm ×4 còn làm rối
+// tạm tầng dưới nên thế vẽ được dựng thuần ở mức cubie: chỉ 3 ô của góc
+// làm việc đổi hướng, mọi viên khác nguyên trạng thái đã giải.
+function flipCaseDiagramHtml() {
+  const st = solvedStickers();
+  twistCornerAt(st, [1, 1, 1], 1);
+  return ollDiagramSvg(flOf(st));
+}
+// F2L "Lôi cặp ra khỏi khe": thế có nghĩa của nó là cặp đang KẸT trong
+// khe trước–phải — góc nằm đúng khe nhưng bị xoắn, ô trắng quay ra mặt
+// trước, mọi thứ còn lại đã giải (cặp không ở tầng trên nên mặt trên
+// trong sơ đồ vẫn vàng hết). Dựng thuần ở mức cubie: xoay vòng 3 hướng
+// của góc ở khe (1,-1,1) để ô trắng đi từ mặt dưới ra mặt trước.
+function stuckCaseDiagramHtml() {
+  const st = solvedStickers();
+  const grp = cubieGroups(st).get('1,-1,1');
+  const remap = { '0,-1,0': [0, 0, 1], '0,0,1': [1, 0, 0], '1,0,0': [0, -1, 0] };
+  if (grp) for (const s of grp) { const nn = remap[s.n.join(',')]; if (nn) s.n = nn.slice(); }
+  return ollDiagramSvg(flOf(st));
+}
+function formulaCardHead(fc, diagramHtml) {
+  const head = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
+  if (!diagramHtml) return head;
+  return '<div class="fc-top"><div class="fc-dia">' + diagramHtml + '</div><div class="fc-txt">' + head + '</div></div>';
+}
 // formula cards
 (function buildFormulas() {
   const box = document.getElementById('formulaCards');
   for (const fc of FORMULAS) {
     const card = document.createElement('div');
     card.className = 'formula-card';
-    card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
+    // 4 bước tầng 3 có sơ đồ thế (2 thẻ tầng 2 ở đầu danh sách thì không):
+    // 'inv' = thế nghịch của công thức, 'flip' = thế góc xoắn thuần.
+    const dia = fc.dia === 'flip' ? flipCaseDiagramHtml() : fc.dia === 'inv' ? caseDiagramHtml(fc.alg) : '';
+    card.innerHTML = formulaCardHead(fc, dia);
     const row = document.createElement('div');
     row.className = 'row';
     const alg = document.createElement('span');
@@ -2721,27 +2770,49 @@ afterMoveCommitted = function () {
 (function buildFormulasNew() {
   const box = document.getElementById('formulaCardsNew');
   if (!box) return;
+  const applyBtn = a => {
+    const btn = document.createElement('button');
+    btn.className = 'btn small formula-apply';
+    btn.textContent = a.label || '▶ Áp dụng thử';
+    btn.addEventListener('click', () => {
+      if (isDemoActive()) interruptDemo();
+      hideBanner();
+      for (const mv of parseAlgSpatial(a.alg)) enqueueMove(mv, { dur: 210 });
+      lastHint = null; document.getElementById('hintOut').classList.remove('show');
+    });
+    return btn;
+  };
   for (const fc of FORMULAS_NEW) {
     const card = document.createElement('div');
     card.className = 'formula-card';
-    card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
-    const row = document.createElement('div');
-    row.className = 'row';
-    for (const a of fc.algs) {
+    if (fc.algs.length > 1) {
+      // Bước có 2 công thức (Sune / Antisune): mỗi công thức một khối
+      // riêng — sơ đồ thế cá / cá gương nằm ngay cạnh công thức và nút
+      // áp dụng thử của chính nó.
+      card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
+      for (const a of fc.algs) {
+        const block = document.createElement('div');
+        block.className = 'fc-alg-block';
+        const dia = document.createElement('div');
+        dia.className = 'fc-dia';
+        dia.innerHTML = caseDiagramHtml(a.alg);
+        const col = document.createElement('div');
+        col.className = 'fc-alg-col';
+        const alg = document.createElement('span');
+        alg.innerHTML = algHtml(a.alg);
+        col.appendChild(alg); col.appendChild(applyBtn(a));
+        block.appendChild(dia); block.appendChild(col);
+        card.appendChild(block);
+      }
+    } else {
+      card.innerHTML = formulaCardHead(fc, caseDiagramHtml(fc.algs[0].alg));
+      const row = document.createElement('div');
+      row.className = 'row';
       const alg = document.createElement('span');
-      alg.innerHTML = algHtml(a.alg);
-      const btn = document.createElement('button');
-      btn.className = 'btn small formula-apply';
-      btn.textContent = a.label || '▶ Áp dụng thử';
-      btn.addEventListener('click', () => {
-        if (isDemoActive()) interruptDemo();
-        hideBanner();
-        for (const mv of parseAlgSpatial(a.alg)) enqueueMove(mv, { dur: 210 });
-        lastHint = null; document.getElementById('hintOut').classList.remove('show');
-      });
-      row.appendChild(alg); row.appendChild(btn);
+      alg.innerHTML = algHtml(fc.algs[0].alg);
+      row.appendChild(alg); row.appendChild(applyBtn(fc.algs[0]));
+      card.appendChild(row);
     }
-    card.appendChild(row);
     box.appendChild(card);
   }
 })();
@@ -2753,7 +2824,9 @@ afterMoveCommitted = function () {
   for (const fc of FORMULAS_F2L) {
     const card = document.createElement('div');
     card.className = 'formula-card';
-    card.innerHTML = '<div class="t">' + fc.t + '</div><div class="d">' + fc.d + '</div>';
+    // Sơ đồ thế từ công thức nghịch; riêng "Lôi cặp ra" dùng thế cặp kẹt
+    // trong khe (góc xoắn, trắng hướng mặt trước) dựng ở mức cubie.
+    card.innerHTML = formulaCardHead(fc, fc.dia === 'stuck' ? stuckCaseDiagramHtml() : caseDiagramHtml(fc.alg));
     const row = document.createElement('div');
     row.className = 'row';
     const alg = document.createElement('span');
